@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: ./docker-compose/Dockerfile.ui
       target: ui
-    image: quay.io/cloudminds/dagger-ui:0.1.0-beta
+    image: quay.io/cloudminds/dagger-ui:latest
     hostname: dagger-ui
     container_name: dagger-ui
     depends_on:
@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: ./docker-compose/Dockerfile.backend
       target: backend
-    image: quay.io/cloudminds/dagger-backend:0.1.0-beta
+    image: quay.io/cloudminds/dagger-backend:latest
     hostname: dagger-backend
     container_name: dagger-backend
     environment:

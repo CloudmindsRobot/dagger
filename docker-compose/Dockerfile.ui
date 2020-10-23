@@ -9,4 +9,6 @@ COPY ./docker-compose/ng-dagger.conf /etc/nginx/conf.d/ng-dagger.conf
 COPY --from=builder /usr/src/app/dist dist
 LABEL MAINTAINER="leon.chen"
 
+RUN apt-get update
+
 CMD ["nginx", "-g", "daemon off;"]
