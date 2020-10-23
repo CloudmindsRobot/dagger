@@ -2,6 +2,9 @@
 
 # dagger - A Log management system based on loki
 
+[![Build Status](https://github.com/CloudmindsRobot/dagger/workflows/build/badge.svg)](https://github.com/CloudmindsRobot/dagger/actions)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
 Dagger 是一个基于 Loki 的日志查询和管理系统，它是由达闼科技（ CloudMinds ）云团队的`大禹基础设施平台`派生出来的一个项目。Dagger 运行在 Loki 前端，具备日志查询、搜索，保存和下载等特性，适用于云原生场景下的容器日志管理场景。
 
 前端基于 vue.js 开发，使用 vuetify ui 框架进行设计，采用 axios 异步框架进行前后端交互。
