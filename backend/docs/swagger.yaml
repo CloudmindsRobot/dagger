@@ -1,0 +1,366 @@
+basePath: /
+info:
+  contact: {}
+  description: this is dagger backend api server
+  license: {}
+  title: dagger backend api
+  version: 1.0.0
+paths:
+  /api/v1/loki/auth/login/:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{}'
+          schema:
+            type: string
+      summary: Login
+  /api/v1/loki/auth/register/:
+    post:
+      consumes:
+      - application/json
+      description: Register
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: '{}'
+          schema:
+            type: string
+      summary: Register
+  /api/v1/loki/auth/userinfo/:
+    get:
+      consumes:
+      - application/json
+      description: Get userinfo by jwt token
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{}'
+          schema:
+            type: string
+      summary: Get userinfo by jwt token
+  /api/v1/loki/context/:
+    get:
+      consumes:
+      - application/json
+      description: limit 2000
+      parameters:
+      - description: The start time for the query as a nanosecond Unix epoch
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The end time for the query as a nanosecond Unix epoch
+        in: path
+        name: end
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Get loki log context from grafana loki and accepts the following query parameters in the URL
+  /api/v1/loki/export/:
+    get:
+      consumes:
+      - application/json
+      description: file log (max count 50000)
+      parameters:
+      - description: The start time for the query as a nanosecond Unix epoch
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The end time for the query as a nanosecond Unix epoch
+        in: path
+        name: end
+        required: true
+        type: string
+      - description: The filter condition
+        in: path
+        name: filter
+        type: string
+      - description: The log level
+        in: path
+        name: level
+        type: string
+      - description: The order to all results
+        in: path
+        name: dsc
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Download loki log to log file and accepts the following query parameters in the URL
+  /api/v1/loki/history:
+    get:
+      consumes:
+      - application/json
+      description: Get loki query history labels
+      parameters:
+      - description: Every page count
+        in: path
+        name: page_size
+        required: true
+        type: integer
+      - description: Page index
+        in: path
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Get loki query history labels
+  /api/v1/loki/history/create:
+    post:
+      consumes:
+      - application/json
+      description: Create loki query history api
+      parameters:
+      - description: The query label value dict
+        in: path
+        name: label_json
+        required: true
+        type: string
+      - description: The query filter value list
+        in: path
+        name: filter_json
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Create loki query history api
+  /api/v1/loki/history/delete/:id:
+    delete:
+      consumes:
+      - application/json
+      description: Delete loki query history labels
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Delete loki query history labels
+  /api/v1/loki/label/values/:
+    get:
+      consumes:
+      - application/json
+      description: limit 2000
+      parameters:
+      - description: The label value
+        in: path
+        name: label
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Retrieves the list of known values for a given label within a given time span. It accepts the following query parameters in the URL
+  /api/v1/loki/labels/:
+    get:
+      consumes:
+      - application/json
+      description: limit 2000
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Retrieves the list of known values for a given label within a given time span. It accepts the following query parameters in the URL
+  /api/v1/loki/list/:
+    get:
+      consumes:
+      - application/json
+      description: limit 2000
+      parameters:
+      - description: The start time for the query as a nanosecond Unix epoch
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The end time for the query as a nanosecond Unix epoch
+        in: path
+        name: end
+        required: true
+        type: string
+      - description: The new query to all results
+        in: path
+        name: all
+        type: string
+      - description: The order to all results
+        in: path
+        name: dsc
+        required: true
+        type: string
+      - description: The filter condition
+        in: path
+        name: filter
+        type: string
+      - description: The log level
+        in: path
+        name: level
+        type: string
+      - description: The max number of entries to return
+        in: path
+        name: limit
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Used to do a query over a range of time and accepts the following query parameters in the URL
+  /api/v1/loki/snapshot:
+    get:
+      consumes:
+      - application/json
+      description: Get loki query result snapshot list
+      parameters:
+      - description: Every page count
+        in: path
+        name: page_size
+        required: true
+        type: integer
+      - description: Page index
+        in: path
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Get loki query result snapshot list
+  /api/v1/loki/snapshot/create:
+    post:
+      consumes:
+      - application/json
+      description: Create loki query result snapshot result
+      parameters:
+      - description: Snapshot filename
+        in: path
+        name: name
+        required: true
+        type: string
+      - description: Snapshot result temp file
+        in: path
+        name: tmp_file
+        required: true
+        type: string
+      - description: Snapshot query result start time
+        in: path
+        name: start_time
+        required: true
+        type: string
+      - description: Snapshot query result end time
+        in: path
+        name: end_time
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Create loki query result snapshot result
+  /api/v1/loki/snapshot/delete/:id:
+    delete:
+      consumes:
+      - application/json
+      description: Delete loki query result snapshot file
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Delete loki query result snapshot file
+  /api/v1/loki/snapshot/detail/:id:
+    get:
+      consumes:
+      - application/json
+      description: Get loki query result snapshot detail
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Get loki query result snapshot detail
+  /ws/tail/:
+    get:
+      consumes:
+      - application/json
+      description: limit 2000
+      parameters:
+      - description: The end time for the query as a nanosecond Unix epoch
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The pod filter condition to perform
+        in: path
+        name: pod
+        type: string
+      - description: The filter condition
+        in: path
+        name: filter
+        type: string
+      - description: The log level
+        in: path
+        name: level
+        type: string
+      - description: The max number of entries to return
+        in: path
+        name: limit
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: WebSocket endpoint that will stream log messages based on a query. It accepts the following query parameters in the URL
+swagger: "2.0"

@@ -1,0 +1,12 @@
+FROM node:14.13 as builder
+WORKDIR /usr/src/app
+COPY ui .
+RUN npm i npm@latest -g && npm install && npm run build
+
+FROM nginx:1.19.3 as ui
+WORKDIR /usr/src/app
+COPY ./docker-compose/ng-dagger.conf /etc/nginx/conf.d/ng-dagger.conf
+COPY --from=builder /usr/src/app/dist dist
+LABEL MAINTAINER="leon.chen"
+
+CMD ["nginx", "-g", "daemon off;"]
