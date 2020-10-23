@@ -10,9 +10,9 @@ Dagger 是一个基于 Loki 的日志查询和管理系统，它是由达闼科�
 
 本地快速部署请参见[Quick Start](#jump)
 
-# Screenshots
+# ScreenShots
 
-<iframe width="720" height="480" src="https://www.youtube.com/embed/1qc8_nZA_dM" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<img src="docs/screenshot.gif">
 
 # Features
 
@@ -30,6 +30,8 @@ Dagger 是一个基于 Loki 的日志查询和管理系统，它是由达闼科�
   - 集成多种日志客户端和 loki 的部署，完成一键部署
 
 # Usage
+
+完整演示视频（[youtube](https://youtu.be/1qc8_nZA_dM)、[bilibili](https://www.bilibili.com/video/BV1Jr4y1w7qz/)）
 
 # Deployment
 
