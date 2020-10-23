@@ -73,7 +73,8 @@ jobs:
           context: .
           file: ./docker-compose/Dockerfile.backend
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          # push: ${{ github.event_name != 'pull_request' }}
+          push: false
           tags: quay.io/cloudminds/dagger-backend:${{ steps.prep.outputs.tags }}
 
       - name: Build ui and push
@@ -83,5 +84,6 @@ jobs:
           context: .
           file: ./docker-compose/Dockerfile.ui
           platforms: linux/amd64
-          push: ${{ github.event_name != 'pull_request' }}
+          # push: ${{ github.event_name != 'pull_request' }}
+          push: false
           tags: quay.io/cloudminds/dagger-ui:${{ steps.prep.outputs.tags }}
