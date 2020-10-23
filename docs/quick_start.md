@@ -6,18 +6,14 @@
 
 ### Docker-Compose
 
-- 进入./deploy/docker-compose 目录编辑 docker-compose.yaml 文件
+- 编辑 docker-compose.yaml 文件
 
 ```
-$ cat ./deploy/docker-compose/docker-compose.yaml
+$ cat docker-compose.yaml
 
 version: "3.8"
 services:
   ui:
-    build:
-      context: .
-      dockerfile: ./docker-compose/Dockerfile.ui
-      target: ui
     image: quay.io/cloudminds/dagger-ui:0.1.0-beta
     container_name: dagger-ui
     depends_on:
@@ -27,10 +23,6 @@ services:
     networks:
       - dagger
   backend:
-    build:
-      context: .
-      dockerfile: ./docker-compose/Dockerfile.backend
-      target: backend
     image: quay.io/cloudminds/dagger-backend:0.1.0-beta
     container_name: dagger-backend
     env:
