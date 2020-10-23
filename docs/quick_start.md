@@ -4,13 +4,50 @@
 
 ## 一、部署说明
 
+### 开始之前
+
+如前所述，Dagger 是工作在 [Loki](https://github.com/grafana/loki) 基础之上的，因此要使用 Dagger，要满足以下条件：
+
+#### Kubernetes 方式
+
+1. 有一个可用的 Kubernetes 环境，并可以获取公网镜像（也可以用其它方式使用私有镜像库、或者直接使用本地镜像），。
+
+1. 部署安装了完整的 Loki，包括日志采集端和 Loki 服务。
+
+例如使用 Helm 3 快速启动 Loki：
+
+```command
+# helm install loki loki/loki  \
+    --set persistence.enabled=true \
+    --set replicas=2 \
+    --set fullnameOverride=loki
+
+# helm install fluent-bit loki/fluent-bit \
+  --set loki.serviceName=loki \
+  --set config.batchSize=10240 \
+  --set fullnameOverride=fluent-bit
+```
+
+然后获取项目源码：`git clone https://github.com/CloudmindsRobot/dagger.git`
+
+### Kubernetes
+
+进入源码目录，编辑 `kubernetes/quickstart.yaml` 文件中的环境变量，指向 Loki 服务，例如：
+
+```yaml
+- name: LOKI_SERVER
+  value: http://loki.infra:3100
+```
+
+如果测试集群没有自动提供 PVC 的能力，也需要将 PVC 部分做一下修改。
+
+使用 `kubectl apply -f quickstart.yaml`，等 Pod 全部运行成功，就可以进行后续步骤了。
+
 ### Docker-Compose
 
-- 编辑 docker-compose.yaml 文件
+- 进入源码目录，编辑 `docker-compose.yaml` 文件
 
-```
-$ cat docker-compose.yaml
-
+```yaml
 version: "3.8"
 services:
   ui:
