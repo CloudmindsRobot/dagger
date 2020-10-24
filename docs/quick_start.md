@@ -48,28 +48,28 @@
 - 进入源码目录，编辑 `docker-compose.yaml` 文件
 
 ```yaml
-version: "3.8"
+version: '3.8'
 services:
   ui:
-    image: quay.io/cloudminds/dagger-ui:0.1.0-beta
+    image: quay.io/cloudminds/dagger-ui:latest
     container_name: dagger-ui
     depends_on:
       - backend
     ports:
-      - "8080:8080"
+      - '8080:8080'
     networks:
       - dagger
   backend:
-    image: quay.io/cloudminds/dagger-backend:0.1.0-beta
+    image: quay.io/cloudminds/dagger-backend:latest
     container_name: dagger-backend
     env:
       #loki服务地址
       LOKI_SERVER: http://1.1.1.1:3100
     ports:
-      - "8000:8000"
+      - '8000:8000'
     networks:
       - dagger
-    command: ["sh", "-c", "./dagger"]
+    command: ['sh', '-c', './dagger']
     volumes:
       - 'static_data:/usr/src/app/static:rw'
       - 'sqlite_data:/usr/src/app/db:rw'
