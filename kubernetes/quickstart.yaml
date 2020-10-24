@@ -1,0 +1,128 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    dagger.service: backend
+  name: backend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      dagger.service: backend
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        dagger.network/dagger: "true"
+        dagger.service: backend
+    spec:
+      containers:
+      - args:
+        - sh
+        - -c
+        - ./dagger
+        image: quay.io/cloudminds/dagger-backend:0.1.0-beta
+        name: dagger-backend
+        env:
+        - name: LOKI_SERVER
+          value: http://loki.infra:3100
+        ports:
+        - containerPort: 8000
+        resources: {}
+        volumeMounts:
+        - mountPath: /usr/src/app/static
+          name: static-data
+        - mountPath: /usr/src/app/db
+          name: sqlite-data
+      restartPolicy: Always
+      serviceAccountName: ""
+      volumes:
+      - name: static-data
+        persistentVolumeClaim:
+          claimName: static-data
+      - name: sqlite-data
+        persistentVolumeClaim:
+          claimName: sqlite-data
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    dagger.service: backend
+  name: dagger-backend
+spec:
+  ports:
+  - name: "8000"
+    port: 8000
+    targetPort: 8000
+  selector:
+    dagger.service: backend
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    dagger.service: sqlite-data
+  name: sqlite-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    dagger.service: static-data
+  name: static-data
+spec:
+  accessModes:
+  - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    dagger.service: ui
+  name: dagger-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      dagger.service: ui
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        dagger.network/dagger: "true"
+        dagger.service: ui
+    spec:
+      containers:
+      - image: quay.io/cloudminds/dagger-ui:0.1.0-beta
+        name: dagger-ui
+        ports:
+        - containerPort: 8080
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    dagger.service: ui
+  name: dagger-ui
+spec:
+  ports:
+  - name: "8080"
+    port: 8080
+    targetPort: 8080
+  selector:
+    dagger.service: ui
+
+
