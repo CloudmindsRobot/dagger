@@ -125,10 +125,6 @@ export default {
       type: String,
       default: () => '',
     },
-    pod: {
-      type: String,
-      default: () => '',
-    },
     loki: {
       type: Object,
       default: () => {},

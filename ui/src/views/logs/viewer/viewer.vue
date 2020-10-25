@@ -150,7 +150,6 @@
                         v-if="
                           filtered || (level.length > 0 && level.length < 5)
                         "
-                        :pod.sync="item.stream.k8s_pod_name"
                         :loki.sync="item"
                         :timestamp.sync="item.info.timestamp"
                         style="line-height: 18px;"
