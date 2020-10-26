@@ -4,7 +4,9 @@ import (
 	"dagger/backend/gin/models"
 	"dagger/backend/gin/runtime"
 	"log"
+	"time"
 
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -49,6 +51,19 @@ func init() {
 func MigrateDB(db *gorm.DB) {
 	if !db.Migrator().HasTable(&models.User{}) {
 		db.Migrator().CreateTable(&models.User{})
+		username, _ := runtime.Cfg.GetValue("users", "admin_username")
+		password, _ := runtime.Cfg.GetValue("users", "admin_passwod")
+		hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			log.Panicf("init admin user error %v", err)
+		}
+		db.Model(&models.User{}).Create(&models.User{
+			Username:    username,
+			Password:    string(hash),
+			IsActive:    true,
+			IsSuperuser: true,
+			CreateAt:    time.Now(),
+		})
 	}
 	if !db.Migrator().HasTable(&models.LogHistory{}) {
 		db.Migrator().CreateTable(&models.LogHistory{})

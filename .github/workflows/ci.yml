@@ -6,9 +6,25 @@ on:
       - "main"
     tags:
       - "**"
-    paths-ignore: ["**/*.md", "*.md"]
+    paths-ignore:
+      [
+        "**/*.md",
+        "*.md",
+        ".dockerignore",
+        ".gitignore",
+        "**/quickstart.yaml",
+        "**/ci.yml",
+      ]
   pull_request:
-    paths-ignore: ["**/*.md", "*.md"]
+    paths-ignore:
+      [
+        "**/*.md",
+        "*.md",
+        ".dockerignore",
+        ".gitignore",
+        "**/quickstart.yaml",
+        "**/ci.yml",
+      ]
 
 jobs:
   build:
@@ -26,7 +42,7 @@ jobs:
             return repo.data
 
       - name: Prepare
-        id: prep
+        id: prepare
         run: |
           VERSION=latest
           if [[ $GITHUB_REF == refs/tags/* ]]; then
@@ -67,7 +83,7 @@ jobs:
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           # push: false
-          tags: quay.io/cloudminds/dagger-backend:${{ steps.prep.outputs.tags }}
+          tags: quay.io/cloudminds/dagger-backend:${{ steps.prepare.outputs.tags }}
 
       - name: Build ui and push
         id: docker_build_ui
@@ -78,4 +94,4 @@ jobs:
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           # push: false
-          tags: quay.io/cloudminds/dagger-ui:${{ steps.prep.outputs.tags }}
+          tags: quay.io/cloudminds/dagger-ui:${{ steps.prepare.outputs.tags }}

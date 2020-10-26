@@ -60,6 +60,8 @@ func InitRouter() {
 	api.DELETE("/snapshot/delete/:id", middlewares.JWTCheck(), controllers.LokiSnapshotDelete)
 	api.GET("/snapshot/detail/:id", middlewares.JWTCheck(), controllers.LokiSnapshotDetail)
 
+	api.GET("/settings/load", controllers.LoadSettings)
+
 	dir, _ := os.Getwd()
 	api.StaticFS("/static", http.Dir(dir+"/static"))
 

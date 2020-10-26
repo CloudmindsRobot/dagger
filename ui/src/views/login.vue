@@ -38,7 +38,7 @@
             </v-card-actions>
           </v-form>
 
-          <v-card-text class="text-center">
+          <v-card-text v-if="settings.allowSignUp" class="text-center">
             <router-link :to="{ name: 'register' }">注册账号</router-link>
           </v-card-text>
         </v-card>
@@ -146,7 +146,7 @@ export default {
     },
   },
   computed: {
-    ...mapState(['jwt']),
+    ...mapState(['jwt', 'settings']),
     offset() {
       switch (this.$vuetify.breakpoint.name) {
         case 'xs':

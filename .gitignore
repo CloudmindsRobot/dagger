@@ -1,6 +1,7 @@
 *.log
 *.log.*
-dagger*
+dagger
+*.db
 
 # editor
 .vscode/
@@ -15,3 +16,4 @@ backend/static
 ui/node_modules
 ui/dist
 charts
+tips.md
