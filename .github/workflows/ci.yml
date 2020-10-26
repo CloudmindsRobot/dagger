@@ -12,8 +12,8 @@ on:
         "*.md",
         ".dockerignore",
         ".gitignore",
-        "quickstart.yaml",
-        "ci.yml",
+        "**/quickstart.yaml",
+        "**/ci.yml",
       ]
   pull_request:
     paths-ignore:
@@ -22,8 +22,8 @@ on:
         "*.md",
         ".dockerignore",
         ".gitignore",
-        "quickstart.yaml",
-        "ci.yml",
+        "**/quickstart.yaml",
+        "**/ci.yml",
       ]
 
 jobs:
