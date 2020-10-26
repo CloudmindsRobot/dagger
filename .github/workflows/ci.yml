@@ -12,7 +12,8 @@ on:
         "*.md",
         ".dockerignore",
         ".gitignore",
-        "kubernetes/quickstart.yaml",
+        "quickstart.yaml",
+        "ci.yml",
       ]
   pull_request:
     paths-ignore:
@@ -21,7 +22,8 @@ on:
         "*.md",
         ".dockerignore",
         ".gitignore",
-        "kubernetes/quickstart.yaml",
+        "quickstart.yaml",
+        "ci.yml",
       ]
 
 jobs:
