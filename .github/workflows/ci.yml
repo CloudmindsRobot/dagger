@@ -6,9 +6,23 @@ on:
       - "main"
     tags:
       - "**"
-    paths-ignore: ["**/*.md", "*.md", ".dockerignore", ".gitignore"]
+    paths-ignore:
+      [
+        "**/*.md",
+        "*.md",
+        ".dockerignore",
+        ".gitignore",
+        "kubernetes/quickstart.yaml",
+      ]
   pull_request:
-    paths-ignore: ["**/*.md", "*.md", ".dockerignore", ".gitignore"]
+    paths-ignore:
+      [
+        "**/*.md",
+        "*.md",
+        ".dockerignore",
+        ".gitignore",
+        "kubernetes/quickstart.yaml",
+      ]
 
 jobs:
   build:
