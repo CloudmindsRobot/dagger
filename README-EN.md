@@ -10,7 +10,7 @@ Dagger is a Cloud Native log query and management system based on Grafana Loki.
 
 It's developed by Cloudminds Inc Cloud team, evolved from Cloudminds Devops platform "DaYu", and it has been used in production environment for more than half a year in Cloudminds.
 
-Dagger runs on the top of Grafana Loki as the user interface, which provides multiple containers log query(mutiple labels supported), search(regex supported) and download(mutiple containers) functions.
+Dagger runs on the top of Grafana Loki as the web user interface, which provides multiple containers log query(mutiple labels supported), search(regex supported) and download(mutiple containers) functions.
 
 Dagger is made for Kubernetes and docker mutiple containers log query requirement. It's a Cloud Native log management production. The main advantage of Dagger is that it's really light weighted, easy to use and dev-friendly.
 
