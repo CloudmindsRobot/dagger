@@ -3,7 +3,8 @@
 [![Build Status](https://github.com/CloudmindsRobot/dagger/workflows/build/badge.svg)](https://github.com/CloudmindsRobot/dagger/actions)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-# dagger - A Log management system based on loki
+## [README of Chinese/中文文档](https://github.com/CloudmindsRobot/dagger/blob/main/README.md)
+# Dagger - A Log management system based on loki
 
 Dagger is a Cloud Native log query and management system based on Grafana Loki. 
 It's developed by Cloudminds Inc Cloud team, evolved from Cloudminds Devops platform "DaYu", and it has been used in production environment for more than half a year in Cloudminds.
