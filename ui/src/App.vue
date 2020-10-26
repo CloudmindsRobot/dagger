@@ -29,6 +29,7 @@
 </template>
 <script>
 import { mapState } from 'vuex'
+import { loadSettings } from '@/api'
 export default {
   name: 'App',
   computed: {
@@ -41,6 +42,23 @@ export default {
     closeSnackBar(index) {
       this.$store.commit('closeSnackBar', index)
     },
+    async loadSettings() {
+      try {
+        const res = await loadSettings()
+        if (res.status === 200) {
+          const settings = res.data.data
+          this.$store.commit('setSettings', settings)
+        }
+      } catch (err) {
+        this.$store.commit('showSnackBar', {
+          text: 'Error: 加载配置失败',
+          color: 'error',
+        })
+      }
+    },
+  },
+  async mounted() {
+    await this.loadSettings()
   },
 }
 </script>

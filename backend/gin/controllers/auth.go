@@ -3,6 +3,7 @@ package controllers
 import (
 	"dagger/backend/gin/databases"
 	"dagger/backend/gin/models"
+	"dagger/backend/gin/runtime"
 	"dagger/backend/gin/utils"
 	"encoding/json"
 	"errors"
@@ -45,6 +46,9 @@ func Login(c *gin.Context) {
 		return
 	}
 
+	user.LastLoginAt = time.Now()
+	databases.DB.Save(&user)
+
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
 		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "用户名或密码错误"})
@@ -73,6 +77,12 @@ func Register(c *gin.Context) {
 	err := json.Unmarshal(postDataByte, &postData)
 	if err != nil {
 		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	allowSignUp, _ := runtime.Cfg.Bool("users", "allow_sign_up")
+	if !allowSignUp {
+		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "	不需要进行用户注册，请查看配置文件"})
 		return
 	}
 

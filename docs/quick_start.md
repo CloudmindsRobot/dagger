@@ -17,6 +17,7 @@
 例如使用 Helm 3 快速启动 Loki：
 
 ```command
+helm repo add loki https://grafana.github.io/loki/charts
 # helm install loki loki/loki  \
     --set persistence.enabled=true \
     --set replicas=2 \
@@ -41,7 +42,7 @@
 
 如果测试集群没有自动提供 PVC 的能力，也需要将 PVC 部分做一下修改。
 
-使用 `kubectl apply -f quickstart.yaml`，等 Pod 全部运行成功，就可以进行后续步骤了。
+使用 `kubectl apply -f kubernetes/quickstart.yaml`，等 Pod 全部运行成功，就可以进行后续步骤了。
 
 ### Docker-Compose
 
@@ -73,15 +74,27 @@ services:
     volumes:
       - 'static_data:/usr/src/app/static:rw'
       - 'sqlite_data:/usr/src/app/db:rw'
+      - 'dagger_conf:/etc/dagger/:rw'
 volumes:
   sqlite_data:
     driver: local
   static_data:
     driver: local
+  dagger_conf:
+    driver: local
 
 networks:
   dagger:
     driver: bridge
+```
+
+- 编辑 `dagger.ini` 文件
+
+```
+[users]
+allow_sign_up = false #是否开启注册
+admin_username = admin #默认管理员
+admin_passwod = admin #默认管理员密码
 ```
 
 - 启动服务
@@ -98,7 +111,8 @@ $ docker-compose up -d
 
 ### 主界面
 
-初始化部署完成后第一次登陆需要注册一个账号用于登陆系统，按照指示注册即可。
+初始化部署完成后第一次登陆使用默认管理员账号密码，参考 `dagger.ini` 文件，如需注册新用户，请将 `allow_sign_up` 配置打开，按照指示注册即可。
+注：用户名、密码和邮箱都是必填的
 
 <img src="images/quickstart/login.jpg" width="35%" height="35%">
 

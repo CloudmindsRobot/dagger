@@ -384,6 +384,26 @@ var doc = `{
                 }
             }
         },
+        "/api/v1/loki/settings/load/": {
+            "get": {
+                "description": "Load Settings for UI",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "LoadSettings",
+                "responses": {
+                    "200": {
+                        "description": "{}",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/api/v1/loki/snapshot": {
             "get": {
                 "description": "Get loki query result snapshot list",

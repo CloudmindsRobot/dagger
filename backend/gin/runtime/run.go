@@ -2,6 +2,7 @@ package runtime
 
 import (
 	"flag"
+	"log"
 
 	"github.com/Unknwon/goconfig"
 )
@@ -15,11 +16,14 @@ var (
 )
 
 func init() {
-	// var err error
-	// Cfg, err = goconfig.LoadConfigFile("settings.ini")
-	// if err != nil {
-	// 	log.Panicf("loading setting conf fail %s", err)
-	// }
+	var err error
+	Cfg, err = goconfig.LoadConfigFile("dagger.ini")
+	if err != nil {
+		Cfg, err = goconfig.LoadConfigFile("/etc/dagger/dagger.ini")
+		if err != nil {
+			log.Panicf("loading setting conf: dagger.ini fail %s", err)
+		}
+	}
 
 	flag.IntVar(&Port, "port", 8000, "port")
 	flag.BoolVar(&Migrate, "migrate", true, "migrate db")

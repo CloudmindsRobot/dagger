@@ -8,6 +8,7 @@ const CSRFTOKENNAME = 'csrftoken'
 const JWTName = 'JWT'
 const TimeOut = 6000
 const Username = 'username'
+const Settings = 'settings'
 
 export default new Vuex.Store({
   state: {
@@ -19,6 +20,7 @@ export default new Vuex.Store({
     csrftoken: getCookie(CSRFTOKENNAME),
     jwt: getCookie(JWTName),
     username: getCookie(Username),
+    settings: getCookie(Settings),
   },
   mutations: {
     // global
@@ -70,6 +72,10 @@ export default new Vuex.Store({
     setUsername(state, username) {
       state.username = username
       setCookie(Username, username)
+    },
+    setSettings(state, settings) {
+      state.settings = settings
+      setCookie(Settings, settings)
     },
   },
   actions: {},

@@ -125,12 +125,19 @@ func LokiList(c *gin.Context) {
 
 			if all {
 				// pod信息
-				if stream["k8s_pod_name"] != nil && strings.Index(podSetStr, stream["k8s_pod_name"].(string)) == -1 {
+				podKey := ""
+				for key := range stream {
+					if strings.Index(key, "pod") > -1 {
+						podKey = key
+						break
+					}
+				}
+				if podKey != "" && stream[podKey] != nil && strings.Index(podSetStr, stream[podKey].(string)) == -1 {
 					podMap := make(map[string]interface{})
-					podMap["text"] = stream["k8s_pod_name"]
+					podMap["text"] = stream[podKey]
 					podMap["selected"] = false
 					podResults = append(podResults, podMap)
-					podSetStr += fmt.Sprintf("%s,", stream["k8s_pod_name"].(string))
+					podSetStr += fmt.Sprintf("%s,", stream[podKey].(string))
 				}
 			}
 
@@ -140,9 +147,10 @@ func LokiList(c *gin.Context) {
 				item["stream"] = stream
 				v := value.([]interface{})
 				message := v[1].(string)
-				if len(strings.Trim(message, "\n")) == 0 {
-					continue
-				}
+				// 保留换行符
+				// if len(strings.Trim(message, "\n")) == 0 {
+				// 	continue
+				// }
 				item["info"] = make(map[string]interface{})
 				item["info"].(map[string]interface{})["timestamp"] = v[0].(string)
 				timestamp, _ := strconv.ParseInt(v[0].(string)[0:13], 10, 64)
@@ -305,9 +313,10 @@ func LokiExport(c *gin.Context) {
 				values := resultEle["values"].([]interface{})
 				for _, value := range values {
 					v := value.([]interface{})
-					if len(strings.Trim(v[1].(string), "\n")) == 0 {
-						continue
-					}
+					// 保留换行符
+					// if len(strings.Trim(v[1].(string), "\n")) == 0 {
+					// 	continue
+					// }
 					messages = append(messages, models.LokiMessage{Timestamp: v[0].(string), Message: v[1].(string)})
 				}
 			}
@@ -381,9 +390,10 @@ func LokiContext(c *gin.Context) {
 			for _, value := range values {
 				item := make(map[string]interface{})
 				v := value.([]interface{})
-				if len(strings.Trim(v[1].(string), "\n")) == 0 {
-					continue
-				}
+				// 保留换行符
+				// if len(strings.Trim(v[1].(string), "\n")) == 0 {
+				// 	continue
+				// }
 				// 正则匹配出日志类型
 				logLevel := utils.LogLevel(v[1].(string))
 				item["timestamp"] = v[0]
