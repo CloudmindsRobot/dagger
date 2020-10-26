@@ -17,6 +17,7 @@
 例如使用 Helm 3 快速启动 Loki：
 
 ```command
+helm repo add loki https://grafana.github.io/loki/charts
 # helm install loki loki/loki  \
     --set persistence.enabled=true \
     --set replicas=2 \
@@ -41,7 +42,7 @@
 
 如果测试集群没有自动提供 PVC 的能力，也需要将 PVC 部分做一下修改。
 
-使用 `kubectl apply -f quickstart.yaml`，等 Pod 全部运行成功，就可以进行后续步骤了。
+使用 `kubectl apply -f kubernetes/quickstart.yaml`，等 Pod 全部运行成功，就可以进行后续步骤了。
 
 ### Docker-Compose
 
@@ -99,6 +100,7 @@ $ docker-compose up -d
 ### 主界面
 
 初始化部署完成后第一次登陆需要注册一个账号用于登陆系统，按照指示注册即可。
+注：用户名、密码和邮箱都是必填的
 
 <img src="images/quickstart/login.jpg" width="35%" height="35%">
 
