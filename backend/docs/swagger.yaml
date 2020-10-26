@@ -244,6 +244,19 @@ paths:
           schema:
             type: string
       summary: Used to do a query over a range of time and accepts the following query parameters in the URL
+  /api/v1/loki/settings/load/:
+    get:
+      consumes:
+      - application/json
+      description: Load Settings for UI
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '{}'
+          schema:
+            type: string
+      summary: LoadSettings
   /api/v1/loki/snapshot:
     get:
       consumes:
