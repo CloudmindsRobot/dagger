@@ -125,12 +125,19 @@ func LokiList(c *gin.Context) {
 
 			if all {
 				// pod信息
-				if stream["k8s_pod_name"] != nil && strings.Index(podSetStr, stream["k8s_pod_name"].(string)) == -1 {
+				podKey := ""
+				for key := range stream {
+					if strings.Index(key, "pod") > -1 {
+						podKey = key
+						break
+					}
+				}
+				if podKey != "" && stream[podKey] != nil && strings.Index(podSetStr, stream[podKey].(string)) == -1 {
 					podMap := make(map[string]interface{})
-					podMap["text"] = stream["k8s_pod_name"]
+					podMap["text"] = stream[podKey]
 					podMap["selected"] = false
 					podResults = append(podResults, podMap)
-					podSetStr += fmt.Sprintf("%s,", stream["k8s_pod_name"].(string))
+					podSetStr += fmt.Sprintf("%s,", stream[podKey].(string))
 				}
 			}
 
