@@ -74,13 +74,10 @@ services:
     volumes:
       - 'static_data:/usr/src/app/static:rw'
       - 'sqlite_data:/usr/src/app/db:rw'
-      - 'dagger_conf:/etc/dagger/:rw'
 volumes:
   sqlite_data:
     driver: local
   static_data:
-    driver: local
-  dagger_conf:
     driver: local
 
 networks:

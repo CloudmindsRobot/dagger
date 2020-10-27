@@ -108,6 +108,13 @@ func LokiList(c *gin.Context) {
 	podResults := []interface{}{}
 	podSetStr := ""
 
+	resultType := result["resultType"]
+	if resultType.(string) == "matrix" {
+		// 暂不支持matrix
+		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
+		return
+	}
+
 	results := result["result"]
 	if results != nil {
 
@@ -305,6 +312,14 @@ func LokiExport(c *gin.Context) {
 		utils.Log4Zap(zap.InfoLevel).Info(fmt.Sprintf("download expr: %s", queryExpr))
 		queryExpr = url.QueryEscape(queryExpr)
 		result := utils.QueryRange(queryExpr, limit, start, end, direction)
+
+		resultType := result["resultType"]
+		if resultType.(string) == "matrix" {
+			// 暂不支持matrix
+			c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
+			return
+		}
+
 		results := result["result"]
 		if results != nil {
 			messages := models.LokiMessages{}
@@ -382,6 +397,14 @@ func LokiContext(c *gin.Context) {
 	queryExpr = url.QueryEscape(queryExpr)
 	result := utils.QueryRange(queryExpr, limit, start, end, direction)
 	queryResults := []interface{}{}
+
+	resultType := result["resultType"]
+	if resultType.(string) == "matrix" {
+		// 暂不支持matrix
+		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
+		return
+	}
+
 	results := result["result"]
 	if results != nil {
 		for _, result := range results.([]interface{}) {

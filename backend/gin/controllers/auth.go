@@ -82,7 +82,7 @@ func Register(c *gin.Context) {
 
 	allowSignUp, _ := runtime.Cfg.Bool("users", "allow_sign_up")
 	if !allowSignUp {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "	不需要进行用户注册，请查看配置文件"})
+		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "不需要进行用户注册，请查看配置文件"})
 		return
 	}
 
@@ -93,7 +93,7 @@ func Register(c *gin.Context) {
 	var user models.User
 	result := databases.DB.Model(&models.User{}).Where("username = ?", username).First(&user)
 	if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "	用户已经存在"})
+		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "用户已经存在"})
 		return
 	}
 
