@@ -54,7 +54,7 @@ func Login(c *gin.Context) {
 		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "用户名或密码错误"})
 		return
 	} else {
-		token, err := utils.GenerateToken(user.ID, user.Username, time.Hour*24)
+		token, err := utils.GenerateToken(user.ID, user.Username, time.Hour*24*7)
 		if err != nil {
 			c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "token认证错误"})
 			return
