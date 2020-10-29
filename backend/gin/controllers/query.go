@@ -300,6 +300,8 @@ func LokiExport(c *gin.Context) {
 	res["exist"] = true
 
 	index := 0
+	utils.Log4Zap(zap.InfoLevel).Info(fmt.Sprintf("download expr: %s", queryExpr))
+	queryExpr = url.QueryEscape(queryExpr)
 	for {
 		if index >= 10 {
 			break
@@ -309,10 +311,7 @@ func LokiExport(c *gin.Context) {
 			break
 		}
 
-		utils.Log4Zap(zap.InfoLevel).Info(fmt.Sprintf("download expr: %s", queryExpr))
-		queryExpr = url.QueryEscape(queryExpr)
 		result := utils.QueryRange(queryExpr, limit, start, end, direction)
-
 		resultType := result["resultType"]
 		if resultType.(string) == "matrix" {
 			// 暂不支持matrix
