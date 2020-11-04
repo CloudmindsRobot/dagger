@@ -103,15 +103,14 @@ func GenerateLevelRegex(level string) string {
 	return levelExpr
 }
 
-func SplitDateTime(start string, end string, limit int64) ([]int64, int64) {
+func SplitDateTime(start string, end string, limit int) ([]int, int) {
 	// 切20份  1586330540000 000000
-	startIndex, _ := strconv.ParseInt(start[0:13], 10, 64)
-	endIndex, _ := strconv.ParseInt(end[0:13], 10, 64)
+	startIndex, _ := strconv.Atoi(start[0:13])
+	endIndex, _ := strconv.Atoi(end[0:13])
 
 	step := (endIndex - startIndex) / limit
-	var index int64
-	index = 0
-	splitDateTimeArray := []int64{}
+	index := 0
+	splitDateTimeArray := []int{}
 	for {
 		if index < limit {
 			splitDateTimeArray = append(splitDateTimeArray, startIndex+step*index)
@@ -124,7 +123,7 @@ func SplitDateTime(start string, end string, limit int64) ([]int64, int64) {
 	return splitDateTimeArray, step
 }
 
-func InitSplitDateTime(limit int64) map[string][]int {
+func InitSplitDateTime(limit int) map[string][]int {
 	chartData := make(map[string][]int)
 	chartData["info"] = make([]int, limit, limit)
 	chartData["debug"] = make([]int, limit, limit)
@@ -134,8 +133,8 @@ func InitSplitDateTime(limit int64) map[string][]int {
 	return chartData
 }
 
-func TimeInPart(splitDateTime []int64, timestamp string, step int64) int64 {
-	timestampIndex, _ := strconv.ParseInt(timestamp[0:13], 10, 64)
+func TimeInPart(splitDateTime []int, timestamp string, step int) int {
+	timestampIndex, _ := strconv.Atoi(timestamp[0:13])
 	stepSum := (timestampIndex - splitDateTime[0]) / step
 
 	return stepSum

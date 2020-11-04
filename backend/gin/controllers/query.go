@@ -118,7 +118,7 @@ func LokiList(c *gin.Context) {
 	results := result["result"]
 	if results != nil {
 
-		size, _ := strconv.ParseInt(c.DefaultQuery("size", "20"), 10, 64)
+		size := 20
 		splitDateTimeArray, step := utils.SplitDateTime(start, end, size)
 		chartResult["xAxis-data"] = splitDateTimeArray
 		chartResult["yAxis-data"] = utils.InitSplitDateTime(size)
