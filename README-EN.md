@@ -2,6 +2,7 @@
 
 [![Build Status](https://github.com/CloudmindsRobot/dagger/workflows/build/badge.svg)](https://github.com/CloudmindsRobot/dagger/actions)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![Go Report Card](https://goreportcard.com/badge/github.com/CloudmindsRobot/dagger)](https://goreportcard.com/report/github.com/CloudmindsRobot/dagger)
 
 ## [README of Chinese/中文文档](https://github.com/CloudmindsRobot/dagger/blob/main/README.md)
 
