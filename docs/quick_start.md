@@ -100,6 +100,18 @@ admin_passwod = admin #默认管理员密码
 $ docker-compose up -d
 ```
 
+### 宿主机直接运行
+
+- 复制 `dagger.ini` 文件至 `/etc/dagger/` 目录下
+
+- 编译项目
+
+```
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dagger backend/main.go
+```
+
+复制 `dagger` 至 `/usr/local/bin/` 目录下，可采用 `nohup` 或 `systemd` 方式启动
+
 ### Helm
 
 更新中...
