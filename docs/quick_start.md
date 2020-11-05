@@ -104,22 +104,25 @@ $ docker-compose up -d
 
 - 复制 `dagger.ini` 文件至 `/etc/dagger/` 目录下
 
-- 编译项目
+- 编译后端
 
 ```
 CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dagger backend/main.go
 ```
 
-复制 `dagger` 至 `/usr/local/bin/` 目录下，可采用 `nohup` 或 `systemd` 方式启动后端
+- 复制 `dagger` 至 `/usr/local/bin/` 目录下，可采用 `nohup` 或 `systemd` 方式启动后端
+
+- 编译前端
 
 ```
 npm install && npm run  build
 ```
 
-将生成的 `dist` 文件下复制到本地路径下， 例如 `/usr/src/`
-修改 `deploy/ng-dagger.conf` 中 location / 下 `root /usr/src/app/dist/;` 为刚刚复制路径
-将`deploy/ng-dagger.conf`复制到`/etc/nginx/conf.d/ng-dagger.conf`
-重启 `nginx`
+- 将生成的 `dist` 文件下复制到本地路径下， 例如 `/usr/src/`
+  修改 `deploy/ng-dagger.conf` 中 location / 下 `root /usr/src/app/dist/;` 为刚刚复制路径，
+  将`deploy/ng-dagger.conf`复制到`/etc/nginx/conf.d/ng-dagger.conf`
+
+- 重启 `nginx`
 
 ### Helm
 
