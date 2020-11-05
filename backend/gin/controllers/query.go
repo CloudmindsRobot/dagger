@@ -109,7 +109,7 @@ func LokiList(c *gin.Context) {
 	podSetStr := ""
 
 	resultType := result["resultType"]
-	if resultType.(string) == "matrix" {
+	if resultType != nil && resultType.(string) == "matrix" {
 		// 暂不支持matrix
 		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
 		return
@@ -173,7 +173,9 @@ func LokiList(c *gin.Context) {
 
 				// 获取表格数据
 				part := utils.TimeInPart(splitDateTimeArray, v[0].(string), step)
-				chartResult["yAxis-data"].(map[string][]int)[logLevel][part]++
+				if part >= 0 && part < size {
+					chartResult["yAxis-data"].(map[string][]int)[logLevel][part]++
+				}
 
 				queryResults = append(queryResults, item)
 			}
@@ -317,7 +319,7 @@ func LokiExport(c *gin.Context) {
 
 		result := utils.QueryRange(queryExpr, limit, start, end, direction)
 		resultType := result["resultType"]
-		if resultType.(string) == "matrix" {
+		if resultType != nil && resultType.(string) == "matrix" {
 			// 暂不支持matrix
 			c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
 			return
@@ -403,7 +405,7 @@ func LokiContext(c *gin.Context) {
 	queryResults := []interface{}{}
 
 	resultType := result["resultType"]
-	if resultType.(string) == "matrix" {
+	if resultType != nil && resultType.(string) == "matrix" {
 		// 暂不支持matrix
 		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
 		return
