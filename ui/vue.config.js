@@ -16,6 +16,13 @@ module.exports = {
             '^/ws/loki': '/ws',
           },
         },
+        '/swagger/': {
+          target: 'http://127.0.0.1:8088',
+          changeOrigin: true,
+          pathRewrite: {
+            '^/swagger/': '/swagger/',
+          },
+        },
       },
     },
   },
