@@ -27,7 +27,7 @@ var upGrader = websocket.Upgrader{
 
 //
 // @Summary Used to do a query over a range of time and accepts the following query parameters in the URL
-// @Description limit 2000
+// @Description default limit 2000
 // @Accept  json
 // @Produce  json
 // @Param   start path string true "The start time for the query as a nanosecond Unix epoch"
@@ -43,11 +43,13 @@ func LokiList(c *gin.Context) {
 	filters := c.QueryArray("filters[]")
 	level := c.DefaultQuery("level", "")
 	pod := c.DefaultQuery("pod", "")
-	all, _ := strconv.ParseBool(c.DefaultQuery("all", "false"))
+	// all, _ := strconv.ParseBool(c.DefaultQuery("all", "false"))
 	dsc, _ := strconv.ParseBool(c.DefaultQuery("dsc", "true"))
+	start := c.DefaultQuery("start", "")
+	end := c.DefaultQuery("end", "")
 
 	queryExprArray := []string{}
-	labels := utils.Labels()
+	labels := utils.Labels(start, end)
 	for _, label := range labels {
 		if c.DefaultQuery(label.(string), "") != "" {
 			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
@@ -82,8 +84,6 @@ func LokiList(c *gin.Context) {
 		}
 	}
 
-	start := c.DefaultQuery("start", "")
-	end := c.DefaultQuery("end", "")
 	middleStart := c.DefaultQuery("middleStart", "")
 	if middleStart == "" {
 		middleStart = start
@@ -130,22 +130,20 @@ func LokiList(c *gin.Context) {
 			resultEle := result.(map[string]interface{})
 			stream := resultEle["stream"].(map[string]interface{})
 
-			if all {
-				// pod信息
-				podKey := ""
-				for key := range stream {
-					if strings.Index(key, "pod") > -1 {
-						podKey = key
-						break
-					}
+			// pod信息
+			podKey := ""
+			for key := range stream {
+				if strings.Index(key, "pod") > -1 {
+					podKey = key
+					break
 				}
-				if podKey != "" && stream[podKey] != nil && strings.Index(podSetStr, stream[podKey].(string)) == -1 {
-					podMap := make(map[string]interface{})
-					podMap["text"] = stream[podKey]
-					podMap["selected"] = false
-					podResults = append(podResults, podMap)
-					podSetStr += fmt.Sprintf("%s,", stream[podKey].(string))
-				}
+			}
+			if podKey != "" && stream[podKey] != nil && strings.Index(podSetStr, stream[podKey].(string)) == -1 {
+				podMap := make(map[string]interface{})
+				podMap["text"] = stream[podKey]
+				podMap["selected"] = false
+				podResults = append(podResults, podMap)
+				podSetStr += fmt.Sprintf("%s,", stream[podKey].(string))
 			}
 
 			values := resultEle["values"].([]interface{})
@@ -185,9 +183,7 @@ func LokiList(c *gin.Context) {
 	data := make(map[string]interface{})
 	data["query"] = queryResults
 	data["chart"] = chartResult
-	if all {
-		data["pod"] = podResults
-	}
+	data["pod"] = podResults
 
 	c.JSON(200, data)
 }
@@ -195,18 +191,24 @@ func LokiList(c *gin.Context) {
 //
 // @Summary Retrieves the list of known values for a given label within a given time span. It accepts the following query parameters in the URL
 // @Description limit 2000
+// @Param   start path string true "The start time for the query as a nanosecond Unix epoch"
+// @Param   end path string true "The end time for the query as a nanosecond Unix epoch"
 // @Accept  json
 // @Produce  json
 // @Success 200 {string} string	"[]"
 // @Router /api/v1/loki/labels/ [get]
 func LokiLabels(c *gin.Context) {
-	values := utils.Labels()
+	start := c.DefaultQuery("start", "")
+	end := c.DefaultQuery("end", "")
+	values := utils.Labels(start, end)
 	c.JSON(200, values)
 }
 
 //
 // @Summary Retrieves the list of known values for a given label within a given time span. It accepts the following query parameters in the URL
 // @Description limit 2000
+// @Param   start path string true "The start time for the query as a nanosecond Unix epoch"
+// @Param   end path string true "The end time for the query as a nanosecond Unix epoch"
 // @Accept  json
 // @Produce  json
 // @Param   label path string true "The label value"
@@ -214,7 +216,9 @@ func LokiLabels(c *gin.Context) {
 // @Router /api/v1/loki/label/values/ [get]
 func LokiLabelValues(c *gin.Context) {
 	label := c.DefaultQuery("label", "")
-	values := utils.LabelValues(label)
+	start := c.DefaultQuery("start", "")
+	end := c.DefaultQuery("end", "")
+	values := utils.LabelValues(label, start, end)
 	c.JSON(200, values)
 }
 
@@ -236,8 +240,11 @@ func LokiExport(c *gin.Context) {
 	pod := c.DefaultQuery("pod", "")
 	dsc, _ := strconv.ParseBool(c.DefaultQuery("dsc", "true"))
 
+	start := c.DefaultQuery("start", "")
+	end := c.DefaultQuery("end", "")
+
 	queryExprArray := []string{}
-	labels := utils.Labels()
+	labels := utils.Labels(start, end)
 	for _, label := range labels {
 		if c.DefaultQuery(label.(string), "") != "" {
 			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
@@ -264,9 +271,6 @@ func LokiExport(c *gin.Context) {
 			queryExpr = fmt.Sprintf("%s %s", queryExpr, levelExpr)
 		}
 	}
-
-	start := c.DefaultQuery("start", "")
-	end := c.DefaultQuery("end", "")
 
 	direction := "forward"
 	if dsc {
@@ -368,7 +372,10 @@ func LokiExport(c *gin.Context) {
 // @Router /api/v1/loki/context/ [get]
 func LokiContext(c *gin.Context) {
 	queryExprArray := []string{}
-	labels := utils.Labels()
+
+	start := c.DefaultQuery("start", "")
+	end := c.DefaultQuery("end", "")
+	labels := utils.Labels(start, end)
 	for _, label := range labels {
 		if c.DefaultQuery(label.(string), "") != "" {
 			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
@@ -382,8 +389,6 @@ func LokiContext(c *gin.Context) {
 
 	queryExpr := fmt.Sprintf("{%s}", strings.Join(queryExprArray, ","))
 
-	start := c.DefaultQuery("start", "")
-	end := c.DefaultQuery("end", "")
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	direction := c.DefaultQuery("direction", "")
 	if direction == "next" {
@@ -447,9 +452,13 @@ func LokiTail(c *gin.Context) {
 
 	filtersStr := c.DefaultQuery("filters", "")
 	filters := strings.Split(filtersStr, ",")
+	start := c.DefaultQuery("start", "")
 
 	queryExprArray := []string{}
-	labels := utils.Labels()
+
+	t := time.Now().Unix()
+	end := fmt.Sprintf("%d000000000", t)
+	labels := utils.Labels(start, end)
 	for _, label := range labels {
 		if c.DefaultQuery(label.(string), "") != "" {
 			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
@@ -483,7 +492,6 @@ func LokiTail(c *gin.Context) {
 		}
 	}
 
-	start := c.DefaultQuery("start", "")
 	queryExpr = url.QueryEscape(queryExpr)
 
 	params := make(map[string]string)

@@ -7,4 +7,4 @@ export const listQueryRanges = (data) =>
 export const exportQueryRanges = (data) =>
   axios('loki/export', { params: data })
 export const listContext = (data) => axios('loki/context', { params: data })
-export const listLabels = () => axios('loki/labels')
+export const listLabels = (data) => axios('loki/labels', { params: data })

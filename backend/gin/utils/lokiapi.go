@@ -45,14 +45,15 @@ func QueryRange(query string, limit int, start string, end string, direction str
 	return nil
 }
 
-func Labels() []interface{} {
+func Labels(start string, end string) []interface{} {
 	url := "/loki/api/v1/labels"
+	queryURL := fmt.Sprintf("%s%s?start=%s&end=%s", runtime.LokiServer, url, start, end)
 	repeat := 0
 	var data string
 	var err error
 	for {
 		if repeat < 5 {
-			data, err = HttpRequest(fmt.Sprintf("%s%s", runtime.LokiServer, url), "GET", nil, nil)
+			data, err = HttpRequest(queryURL, "GET", nil, nil)
 			if err != nil {
 				repeat++
 				Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("get loki labels error %s", err))
@@ -85,17 +86,14 @@ func Labels() []interface{} {
 	return []interface{}{}
 }
 
-func LabelValues(label string) []interface{} {
-	params := make(map[string]interface{})
-	h, _ := time.ParseDuration("-1h")
-	t := time.Now().Add(24 * h * 7).Unix()
-	url := fmt.Sprintf("/loki/api/v1/label/%s/values?start=%s", label, fmt.Sprintf("%d000000000", t))
+func LabelValues(label string, start string, end string) []interface{} {
+	queryURL := fmt.Sprintf("%s/loki/api/v1/label/%s/values?start=%s&end=%s", runtime.LokiServer, label, start, end)
 	repeat := 0
 	var data string
 	var err error
 	for {
 		if repeat < 5 {
-			data, err = HttpRequest(fmt.Sprintf("%s%s", runtime.LokiServer, url), "GET", nil, params)
+			data, err = HttpRequest(queryURL, "GET", nil, nil)
 			if err != nil {
 				repeat++
 				Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("get loki label values error %s", err))

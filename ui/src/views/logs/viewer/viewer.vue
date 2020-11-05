@@ -11,7 +11,10 @@
           <v-card>
             <v-card-title style="padding: 10px 20px 0 !important;">
               <span class="pr-4">
-                <loki-filter ref="lokiFilter"></loki-filter>
+                <loki-filter
+                  ref="lokiFilter"
+                  :dateRangeTimestamp.sync="dateRangeTimestamp"
+                ></loki-filter>
               </span>
               <span class="pr-4">
                 <loki-datetime-range-picker
@@ -245,7 +248,7 @@
 </style>
 
 <script>
-import { listQueryRanges, exportQueryRanges, listLabels } from '@/api'
+import { listQueryRanges, exportQueryRanges } from '@/api'
 import { mapState } from 'vuex'
 import LokiHistogram from './components/LokiHistogram'
 import LokiDatetimeRangePicker from './components/LokiDateTimeRangePicker'
@@ -324,7 +327,6 @@ export default {
     offset: 0,
     easing: 'easeInOutCubic',
     pod: '',
-    all: false,
     icon: 'play_circle_outline',
     websocket: null,
     timeoutHandler: null,
@@ -361,7 +363,6 @@ export default {
           middleStart: this.middleStart,
           middleEnd: this.middleEnd,
           pod: this.pod,
-          all: this.all,
           dsc: this.dsc,
           filters: this.filters,
         })
@@ -526,7 +527,6 @@ export default {
       } else {
         this.$refs.lokiHistogram.legendSelected = histogramLegends
       }
-      this.all = false
       this.listQueryRanges()
     },
     async handleSaveResult() {
@@ -587,7 +587,6 @@ export default {
       this.level = []
       this.pod = ''
       this.pods = []
-      this.all = true
       this.legends.forEach((item) => {
         item.selected = false
       })
@@ -614,7 +613,6 @@ export default {
         }
       })
       this.pod = filterPod.join('|')
-      this.all = false
       this.listQueryRanges()
     },
     handlerParams() {
@@ -707,19 +705,6 @@ export default {
         this.handlerClose()
       }
     },
-    async listLabels() {
-      try {
-        const res = await listLabels()
-        if (res.status === 200) {
-          this.labels = res.data
-        }
-      } catch (err) {
-        this.$store.commit('showSnackBar', {
-          text: 'Error: 获取数据失败',
-          color: 'error',
-        })
-      }
-    },
   },
   created() {
     window.addEventListener('beforeunload', this.handlerClose)
@@ -733,7 +718,6 @@ export default {
   async mounted() {
     if (this.$store.state.jwt) {
       this.$refs.dateRangePicker.handlerChangeQuickTime(5)
-      await this.listLabels()
       const pod = this.$route.query['pod']
       const start = this.$route.query['start']
       const end = this.$route.query['end']
@@ -779,7 +763,6 @@ export default {
           this.pod = pod
           this.pods = [{ text: pod, selected: true }]
         }
-        this.all = true
         this.listQueryRanges()
       }
     }

@@ -9,6 +9,13 @@ module.exports = {
             '^/api/v1/loki': '/api/v1/loki',
           },
         },
+        '/ws/loki': {
+          target: 'http://127.0.0.1:8088',
+          changeOrigin: true,
+          pathRewrite: {
+            '^/ws/loki': '/ws',
+          },
+        },
       },
     },
   },

@@ -95,6 +95,12 @@ import {
 
 export default {
   name: 'LokiViewerFilterCombobox',
+  props: {
+    dateRangeTimestamp: {
+      type: Array,
+      default: () => [],
+    },
+  },
   data: () => ({
     model: [],
     filterItems: [],
@@ -136,10 +142,10 @@ export default {
       }
       this.loading = false
     },
-    async listLabels() {
+    async listLabels(data) {
       try {
         this.loading = true
-        const res = await listLabels()
+        const res = await listLabels(data)
         if (res.status === 200) {
           const items = []
           res.data.forEach((item) => {
@@ -303,7 +309,11 @@ export default {
 
             this.handlerSearch()
           } else {
-            await this.listLabelValues({ label: lastModel.value })
+            await this.listLabelValues({
+              label: lastModel.value,
+              start: this.dateRangeTimestamp[0],
+              end: this.dateRangeTimestamp[1],
+            })
             this.filterItems = []
             this.filterDict.label.items.forEach((i) => {
               this.filterItems.push(i)
@@ -315,7 +325,12 @@ export default {
   },
   mounted() {
     if (this.$store.state.jwt) {
-      this.listLabels()
+      this.$nextTick(() => {
+        this.listLabels({
+          start: this.dateRangeTimestamp[0],
+          end: this.dateRangeTimestamp[1],
+        })
+      })
     }
   },
 }
