@@ -7,11 +7,13 @@ import (
 	"dagger/backend/gin/utils"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -32,7 +34,8 @@ func Login(c *gin.Context) {
 	var postData map[string]interface{}
 	err := json.Unmarshal(postDataByte, &postData)
 	if err != nil {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": err.Error()})
+		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 		return
 	}
 
@@ -42,7 +45,7 @@ func Login(c *gin.Context) {
 	var user models.User
 	result := databases.DB.Model(&models.User{}).Where("username = ?", username).First(&user)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "用户名或密码错误"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "用户名或密码错误"})
 		return
 	}
 
@@ -51,12 +54,12 @@ func Login(c *gin.Context) {
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "用户名或密码错误"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "用户名或密码错误"})
 		return
 	} else {
 		token, err := utils.GenerateToken(user.ID, user.Username, time.Hour*24*7)
 		if err != nil {
-			c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "token认证错误"})
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "token认证错误"})
 			return
 		}
 		c.AbortWithStatusJSON(200, gin.H{"success": true, "token": token})
@@ -76,13 +79,14 @@ func Register(c *gin.Context) {
 	var postData map[string]interface{}
 	err := json.Unmarshal(postDataByte, &postData)
 	if err != nil {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": err.Error()})
+		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 		return
 	}
 
 	allowSignUp, _ := runtime.Cfg.Bool("users", "allow_sign_up")
 	if !allowSignUp {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "不需要进行用户注册，请查看配置文件"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "不需要进行用户注册，请查看配置文件"})
 		return
 	}
 
@@ -93,13 +97,14 @@ func Register(c *gin.Context) {
 	var user models.User
 	result := databases.DB.Model(&models.User{}).Where("username = ?", username).First(&user)
 	if !errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "用户已经存在"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "用户已经存在"})
 		return
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": err.Error()})
+		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 		return
 	}
 

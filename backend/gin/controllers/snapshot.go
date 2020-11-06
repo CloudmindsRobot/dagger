@@ -62,7 +62,7 @@ func LokiSnapshotDelete(c *gin.Context) {
 	var snapshot models.LogSnapshot
 	result := databases.DB.Model(&models.LogSnapshot{}).Where("id = ?", snapshotID).First(&snapshot)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "快照文件不存在"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "快照文件不存在"})
 		return
 	}
 
@@ -73,7 +73,7 @@ func LokiSnapshotDelete(c *gin.Context) {
 		_, err := exec.Command("bash", "-c", cmd).CombinedOutput()
 		if err != nil {
 			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("rm file error, %s", err))
-			c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "删除快照文件失败"})
+			c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 			return
 		}
 	}
@@ -100,7 +100,8 @@ func LokiSnapshotCreate(c *gin.Context) {
 	var postData map[string]interface{}
 	err := json.Unmarshal(postDataByte, &postData)
 	if err != nil {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": err.Error()})
+		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "请查看服务器日志"})
 		return
 	}
 
@@ -111,7 +112,7 @@ func LokiSnapshotCreate(c *gin.Context) {
 	_, err = exec.Command("bash", "-c", cmd).CombinedOutput()
 	if err != nil {
 		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mkdir error, %s", err))
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "创建快照文件目录失败"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "创建快照文件目录失败"})
 		return
 	}
 
@@ -126,12 +127,12 @@ func LokiSnapshotCreate(c *gin.Context) {
 			_, err = exec.Command("bash", "-c", cmd).CombinedOutput()
 			if err != nil {
 				utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mv file error, %s", err))
-				c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "重命名结果临时文件失败"})
+				c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "重命名结果临时文件失败"})
 				return
 			}
 		} else {
 			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mv file error, %s", err))
-			c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "快照文件已存在"})
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "快照文件已存在"})
 			return
 		}
 
@@ -139,7 +140,7 @@ func LokiSnapshotCreate(c *gin.Context) {
 		out, err := exec.Command("bash", "-c", cmd).CombinedOutput()
 		if err != nil {
 			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mv file error, %s", err))
-			c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "统计快照文件内容失败"})
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "统计快照文件内容失败"})
 			return
 		}
 		reg, _ := regexp.Compile(`(\d+)`)
@@ -167,7 +168,7 @@ func LokiSnapshotCreate(c *gin.Context) {
 		return
 	}
 
-	c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "结果临时文件无法找到"})
+	c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "结果临时文件无法找到"})
 	return
 }
 
@@ -184,21 +185,21 @@ func LokiSnapshotDetail(c *gin.Context) {
 	var snapshot models.LogSnapshot
 	result := databases.DB.Model(&models.LogSnapshot{}).Where("id = ?", snapshotID).First(&snapshot)
 	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "快照文件不存在"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "快照文件不存在"})
 		return
 	}
 	dir, _ := os.Getwd()
 	filepath := fmt.Sprintf("%s/%s", dir, snapshot.Dir)
 
 	if !utils.FileExists(filepath) {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "快照文件不存在"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "快照文件不存在"})
 		return
 	}
 
 	file, err := os.Open(filepath)
 	if err != nil {
 		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("read file error, %s", err))
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "读取快照文件失败"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "读取快照文件失败"})
 		return
 	}
 	defer file.Close()

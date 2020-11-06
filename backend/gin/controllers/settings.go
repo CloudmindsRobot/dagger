@@ -17,7 +17,7 @@ import (
 func LoadSettings(c *gin.Context) {
 	allowSignUp, err := runtime.Cfg.Bool("users", "allow_sign_up")
 	if err != nil {
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": fmt.Sprintf("配置加载失败：%s", err.Error())})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": fmt.Sprintf("配置加载失败：%s", err.Error())})
 		return
 	}
 

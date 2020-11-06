@@ -53,12 +53,11 @@
                 >
                   限制:
                   <span class="pr-4">
-                    <v-select
+                    <v-text-field
+                      type="number"
                       v-model="limit"
-                      :items="[500, 1000, 2000, 5000, 10000]"
-                      x-small
-                      style="margin-left: 10px;width: 80px !important;"
-                    ></v-select>
+                      style="width: 60px;margin-left: 5px;"
+                    ></v-text-field>
                   </span>
                   <span class="pr-4">结果: {{ items.length }}</span>
                   <span class="pr-4">
@@ -248,7 +247,7 @@
 </style>
 
 <script>
-import { listQueryRanges, exportQueryRanges } from '@/api'
+import { listQueryRanges, exportQueryRanges, listLabels } from '@/api'
 import { mapState } from 'vuex'
 import LokiHistogram from './components/LokiHistogram'
 import LokiDatetimeRangePicker from './components/LokiDateTimeRangePicker'
@@ -341,6 +340,13 @@ export default {
   },
   methods: {
     async listQueryRanges() {
+      if (this.limit > 50000) {
+        this.$store.commit('showSnackBar', {
+          text: 'Warn: 最大支持单次5000条日志输出',
+          color: 'warning',
+        })
+        return
+      }
       this.loading = true
       try {
         const filterData = {}
@@ -414,6 +420,11 @@ export default {
             this.pod = pod
             this.pods = [{ text: pod, selected: true }]
           }
+        } else {
+          this.$store.commit('showSnackBar', {
+            text: `Error: ${res.data.message}`,
+            color: 'error',
+          })
         }
       } catch (err) {
         this.$store.commit('showSnackBar', {
@@ -484,6 +495,11 @@ export default {
             this.downloading = false
             return null
           }
+        } else {
+          this.$store.commit('showSnackBar', {
+            text: `Error: ${res.data.message}`,
+            color: 'error',
+          })
         }
       } catch (err) {
         this.$store.commit('showSnackBar', {
@@ -705,6 +721,19 @@ export default {
         this.handlerClose()
       }
     },
+    async listLabels(data) {
+      try {
+        const res = await listLabels(data)
+        if (res.status === 200) {
+          this.labels = res.data
+        }
+      } catch (err) {
+        this.$store.commit('showSnackBar', {
+          text: 'Error: 获取数据失败',
+          color: 'error',
+        })
+      }
+    },
   },
   created() {
     window.addEventListener('beforeunload', this.handlerClose)
@@ -718,6 +747,7 @@ export default {
   async mounted() {
     if (this.$store.state.jwt) {
       this.$refs.dateRangePicker.handlerChangeQuickTime(5)
+      await this.listLabels({})
       const pod = this.$route.query['pod']
       const start = this.$route.query['start']
       const end = this.$route.query['end']

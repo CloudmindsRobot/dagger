@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 )
 
-func HttpRequest(apiURL string, method string, headers map[string]string, data interface{}) (string, error) {
+func HttpRequest(apiURL string, method string, headers map[string]string, data interface{}) (string, int, error) {
 	client := &http.Client{
 		Transport: &http.Transport{
 			TLSClientConfig:   &tls.Config{InsecureSkipVerify: true},
@@ -25,23 +24,19 @@ func HttpRequest(apiURL string, method string, headers map[string]string, data i
 	}
 
 	if err != nil {
-		return "", err
+		return "", 500, err
 	}
 
 	response, err := client.Do(req)
 	if err != nil {
-		return "", err
+		return "", 500, err
 	}
 
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
-		return "", err
+		return "", 500, err
 	}
 
 	defer response.Body.Close()
-	if response.StatusCode == 200 || response.StatusCode == 201 {
-		return string(body), nil
-	} else {
-		return "", fmt.Errorf("%s", string(body))
-	}
+	return string(body), response.StatusCode, nil
 }

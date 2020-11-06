@@ -17,10 +17,10 @@ func QueryRange(query string, limit int, start string, end string, direction str
 	repeat := 0
 	var data string
 	var err error
+	var code int
 	for {
 		if repeat < 5 {
-
-			data, err = HttpRequest(queryURL, "GET", nil, params)
+			data, code, err = HttpRequest(queryURL, "GET", nil, params)
 			if err != nil {
 				repeat++
 				time.Sleep(time.Millisecond * 100)
@@ -31,6 +31,12 @@ func QueryRange(query string, limit int, start string, end string, direction str
 			return nil
 		}
 	}
+
+	if code != 200 && code != 201 {
+		Log4Zap(zap.ErrorLevel).Error(data)
+		return nil
+	}
+
 	var jsonRes map[string]interface{}
 	err = json.Unmarshal([]byte(data), &jsonRes)
 	if err != nil {
@@ -51,9 +57,10 @@ func Labels(start string, end string) []interface{} {
 	repeat := 0
 	var data string
 	var err error
+	var code int
 	for {
 		if repeat < 5 {
-			data, err = HttpRequest(queryURL, "GET", nil, nil)
+			data, code, err = HttpRequest(queryURL, "GET", nil, nil)
 			if err != nil {
 				repeat++
 				Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("get loki labels error %s", err))
@@ -62,14 +69,20 @@ func Labels(start string, end string) []interface{} {
 			}
 			break
 		} else {
-			return []interface{}{}
+			return nil
 		}
 	}
+
+	if code != 200 && code != 201 {
+		Log4Zap(zap.ErrorLevel).Error(data)
+		return nil
+	}
+
 	var jsonRes map[string]interface{}
 	err = json.Unmarshal([]byte(data), &jsonRes)
 	if err != nil {
 		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("Unmarshal loki labels response error %s", err))
-		return []interface{}{}
+		return nil
 	}
 
 	if _, ok := jsonRes["data"]; ok {
@@ -83,7 +96,7 @@ func Labels(start string, end string) []interface{} {
 		return vals
 	}
 
-	return []interface{}{}
+	return nil
 }
 
 func LabelValues(label string, start string, end string) []interface{} {
@@ -91,9 +104,10 @@ func LabelValues(label string, start string, end string) []interface{} {
 	repeat := 0
 	var data string
 	var err error
+	var code int
 	for {
 		if repeat < 5 {
-			data, err = HttpRequest(queryURL, "GET", nil, nil)
+			data, code, err = HttpRequest(queryURL, "GET", nil, nil)
 			if err != nil {
 				repeat++
 				Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("get loki label values error %s", err))
@@ -102,14 +116,20 @@ func LabelValues(label string, start string, end string) []interface{} {
 			}
 			break
 		} else {
-			return []interface{}{}
+			return nil
 		}
 	}
+
+	if code != 200 && code != 201 {
+		Log4Zap(zap.ErrorLevel).Error(data)
+		return nil
+	}
+
 	var jsonRes map[string]interface{}
 	err = json.Unmarshal([]byte(data), &jsonRes)
 	if err != nil {
 		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("Unmarshal loki label values response error %s", err))
-		return []interface{}{}
+		return nil
 	}
 
 	if _, ok := jsonRes["data"]; ok {
@@ -117,5 +137,5 @@ func LabelValues(label string, start string, end string) []interface{} {
 		return values
 	}
 
-	return []interface{}{}
+	return nil
 }

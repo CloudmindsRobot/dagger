@@ -43,7 +43,6 @@ func LokiList(c *gin.Context) {
 	filters := c.QueryArray("filters[]")
 	level := c.DefaultQuery("level", "")
 	pod := c.DefaultQuery("pod", "")
-	// all, _ := strconv.ParseBool(c.DefaultQuery("all", "false"))
 	dsc, _ := strconv.ParseBool(c.DefaultQuery("dsc", "true"))
 	start := c.DefaultQuery("start", "")
 	end := c.DefaultQuery("end", "")
@@ -61,7 +60,7 @@ func LokiList(c *gin.Context) {
 	}
 
 	if len(queryExprArray) == 0 {
-		c.JSON(200, nil)
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "缺少查询条件"})
 		return
 	}
 
@@ -70,7 +69,7 @@ func LokiList(c *gin.Context) {
 		_, err := regexp.Compile(filter)
 		if err != nil {
 			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("regex compile error, %s", err))
-			c.JSON(200, nil)
+			c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 			return
 		}
 		filter := strings.ReplaceAll(filter, "\\", "\\\\")
@@ -94,24 +93,29 @@ func LokiList(c *gin.Context) {
 	}
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "500"))
 
+	if limit > 50000 {
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "最大支持50000条日志输出"})
+		return
+	}
+
 	direction := "forward"
 	if dsc {
 		direction = "backward"
 	}
 
 	utils.Log4Zap(zap.InfoLevel).Info(fmt.Sprintf("query expr: %s", queryExpr))
-	queryExpr = url.QueryEscape(queryExpr)
-	result := utils.QueryRange(queryExpr, limit, middleStart, middleEnd, direction)
-
 	var queryResults []interface{}
 	chartResult := make(map[string]interface{})
 	podResults := []interface{}{}
 	podSetStr := ""
 
+	queryExpr = url.QueryEscape(queryExpr)
+	result := utils.QueryRange(queryExpr, limit, middleStart, middleEnd, direction)
+
 	resultType := result["resultType"]
 	if resultType != nil && resultType.(string) == "matrix" {
 		// 暂不支持matrix
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
 		return
 	}
 
@@ -180,6 +184,10 @@ func LokiList(c *gin.Context) {
 				queryResults = append(queryResults, item)
 			}
 		}
+
+	} else {
+		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
+		return
 	}
 
 	data := make(map[string]interface{})
@@ -203,7 +211,13 @@ func LokiLabels(c *gin.Context) {
 	start := c.DefaultQuery("start", "")
 	end := c.DefaultQuery("end", "")
 	values := utils.Labels(start, end)
-	c.JSON(200, values)
+	if values != nil {
+		c.JSON(200, values)
+	} else {
+		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
+		return
+	}
+
 }
 
 //
@@ -221,7 +235,12 @@ func LokiLabelValues(c *gin.Context) {
 	start := c.DefaultQuery("start", "")
 	end := c.DefaultQuery("end", "")
 	values := utils.LabelValues(label, start, end)
-	c.JSON(200, values)
+	if values != nil {
+		c.JSON(200, values)
+	} else {
+		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
+		return
+	}
 }
 
 //
@@ -258,7 +277,7 @@ func LokiExport(c *gin.Context) {
 	}
 
 	if len(queryExprArray) == 0 {
-		c.JSON(200, nil)
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "缺少查询条件"})
 		return
 	}
 
@@ -288,7 +307,7 @@ func LokiExport(c *gin.Context) {
 	_, err := exec.Command("bash", "-c", cmd).CombinedOutput()
 	if err != nil {
 		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mkdir error, %s", err))
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "创建文件下载目录失败"})
+		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "创建文件下载目录失败"})
 		return
 	}
 
@@ -321,7 +340,7 @@ func LokiExport(c *gin.Context) {
 		resultType := result["resultType"]
 		if resultType != nil && resultType.(string) == "matrix" {
 			// 暂不支持matrix
-			c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
 			return
 		}
 
@@ -385,7 +404,7 @@ func LokiContext(c *gin.Context) {
 	}
 
 	if len(queryExprArray) == 0 {
-		c.JSON(200, nil)
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "缺少查询条件"})
 		return
 	}
 
@@ -407,7 +426,7 @@ func LokiContext(c *gin.Context) {
 	resultType := result["resultType"]
 	if resultType != nil && resultType.(string) == "matrix" {
 		// 暂不支持matrix
-		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
 		return
 	}
 
@@ -431,6 +450,9 @@ func LokiContext(c *gin.Context) {
 				queryResults = append(queryResults, item)
 			}
 		}
+	} else {
+		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
+		return
 	}
 
 	c.JSON(200, queryResults)
@@ -472,6 +494,7 @@ func LokiTail(c *gin.Context) {
 	}
 
 	if len(queryExprArray) == 0 {
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "缺少查询条件"})
 		return
 	}
 
@@ -480,7 +503,7 @@ func LokiTail(c *gin.Context) {
 		_, err := regexp.Compile(filter)
 		if err != nil {
 			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("regex compile error, %s", err))
-			c.JSON(200, nil)
+			c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 			return
 		}
 		filter := strings.ReplaceAll(filter, "\\", "\\\\")

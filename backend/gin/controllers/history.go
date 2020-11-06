@@ -3,13 +3,16 @@ package controllers
 import (
 	"dagger/backend/gin/databases"
 	"dagger/backend/gin/models"
+	"dagger/backend/gin/utils"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"strconv"
 	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 //
@@ -26,7 +29,8 @@ func LokiHistoryCreate(c *gin.Context) {
 	var postData map[string]interface{}
 	err := json.Unmarshal(postDataByte, &postData)
 	if err != nil {
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
+		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "请查看服务器日志"})
 		return
 	}
 

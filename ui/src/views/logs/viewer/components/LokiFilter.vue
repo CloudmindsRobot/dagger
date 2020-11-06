@@ -153,6 +153,11 @@ export default {
           })
           this.filterItems = JSON.parse(JSON.stringify(items))
           this.originItems = JSON.parse(JSON.stringify(items))
+        } else {
+          this.$store.commit('showSnackBar', {
+            text: `Error: ${res.data.message}`,
+            color: 'error',
+          })
         }
       } catch (err) {
         this.$store.commit('showSnackBar', {
@@ -233,6 +238,11 @@ export default {
           this.$store.commit('showSnackBar', {
             text: 'Success: 保存查询条件成功',
             color: 'success',
+          })
+        } else {
+          this.$store.commit('showSnackBar', {
+            text: `Error: ${res.data.message}`,
+            color: 'error',
           })
         }
       } catch (err) {
