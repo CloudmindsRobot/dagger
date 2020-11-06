@@ -1,10 +1,10 @@
 package controllers
 
 import (
-	"dagger/backend/gin/databases"
-	"dagger/backend/gin/models"
-	"dagger/backend/gin/runtime"
-	"dagger/backend/gin/utils"
+	"dagger/backend/databases"
+	"dagger/backend/models"
+	"dagger/backend/runtime"
+	"dagger/backend/utils"
 	"encoding/json"
 	"errors"
 	"fmt"

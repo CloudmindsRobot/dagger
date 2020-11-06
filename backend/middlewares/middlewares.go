@@ -1,9 +1,9 @@
 package middlewares
 
 import (
-	"dagger/backend/gin/databases"
-	"dagger/backend/gin/models"
-	"dagger/backend/gin/utils"
+	"dagger/backend/databases"
+	"dagger/backend/models"
+	"dagger/backend/utils"
 	"encoding/base64"
 	"encoding/json"
 	"errors"

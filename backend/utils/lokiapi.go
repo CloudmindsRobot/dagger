@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"dagger/backend/gin/runtime"
+	"dagger/backend/runtime"
 	"encoding/json"
 	"fmt"
 	"time"

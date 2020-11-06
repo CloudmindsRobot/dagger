@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"dagger/backend/gin/models"
-	"dagger/backend/gin/utils"
+	"dagger/backend/models"
+	"dagger/backend/utils"
 	"fmt"
 	"net/http"
 	"net/url"

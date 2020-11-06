@@ -1,8 +1,8 @@
 package databases
 
 import (
-	"dagger/backend/gin/models"
-	"dagger/backend/gin/runtime"
+	"dagger/backend/models"
+	"dagger/backend/runtime"
 	"log"
 	"time"
 

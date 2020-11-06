@@ -1,10 +1,10 @@
 package router
 
 import (
-	"dagger/backend/gin/controllers"
-	"dagger/backend/gin/middlewares"
-	"dagger/backend/gin/runtime"
-	session "dagger/backend/gin/sessions"
+	"dagger/backend/controllers"
+	"dagger/backend/middlewares"
+	"dagger/backend/runtime"
+	session "dagger/backend/sessions"
 	"fmt"
 	"net/http"
 	"os"

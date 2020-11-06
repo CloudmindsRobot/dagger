@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"dagger/backend/gin/runtime"
+	"dagger/backend/runtime"
 	"fmt"
 
 	"github.com/gin-gonic/gin"
