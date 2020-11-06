@@ -342,7 +342,7 @@ export default {
     async listQueryRanges() {
       if (this.limit > 50000) {
         this.$store.commit('showSnackBar', {
-          text: 'Warn: 最大支持单次5000条日志输出',
+          text: 'Warn: 最大支持单次50000条日志输出',
           color: 'warning',
         })
         return
