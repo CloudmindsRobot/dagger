@@ -15,6 +15,7 @@ on:
         "**/quickstart.yaml",
         "**/ci.yml",
         "dagger.ini",
+        "vendor/*",
       ]
   pull_request:
     paths-ignore:
@@ -26,6 +27,7 @@ on:
         "**/quickstart.yaml",
         "**/ci.yml",
         "dagger.ini",
+        "vendor/*",
       ]
 
 jobs:

@@ -42,29 +42,40 @@ func Login(c *gin.Context) {
 	username := postData["username"].(string)
 	password := postData["password"].(string)
 
-	var user models.User
-	result := databases.DB.Model(&models.User{}).Where("username = ?", username).First(&user)
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "用户名或密码错误"})
-		return
+	var user *models.User
+
+	ldapEnabled, _ := runtime.Cfg.Bool("ldap", "enabled")
+	if ldapEnabled {
+		var result bool
+		result, user = utils.LdapCheck(username, password)
+		if !result {
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "用户名或密码错误"})
+			return
+		}
+	} else {
+		result := databases.DB.Model(&models.User{}).Where("username = ?", username).First(user)
+		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "不存在的用户"})
+			return
+		}
+
+		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+		if err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "用户名或密码错误"})
+			return
+		}
 	}
 
 	user.LastLoginAt = time.Now()
 	databases.DB.Save(&user)
 
-	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+	token, err := utils.GenerateToken(user.ID, user.Username, time.Hour*24*7)
 	if err != nil {
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "用户名或密码错误"})
-		return
-	} else {
-		token, err := utils.GenerateToken(user.ID, user.Username, time.Hour*24*7)
-		if err != nil {
-			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "token认证错误"})
-			return
-		}
-		c.AbortWithStatusJSON(200, gin.H{"success": true, "token": token})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "token认证错误"})
 		return
 	}
+	c.AbortWithStatusJSON(200, gin.H{"success": true, "token": token})
+	return
 }
 
 //
@@ -87,6 +98,12 @@ func Register(c *gin.Context) {
 	allowSignUp, _ := runtime.Cfg.Bool("users", "allow_sign_up")
 	if !allowSignUp {
 		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "不需要进行用户注册，请查看配置文件"})
+		return
+	}
+
+	ldapEnabled, _ := runtime.Cfg.Bool("ldap", "enabled")
+	if ldapEnabled {
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "已启用Ldap, 请使用ldap账户登陆，无需注册"})
 		return
 	}
 

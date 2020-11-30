@@ -92,6 +92,16 @@ networks:
 allow_sign_up = false #是否开启注册
 admin_username = admin #默认管理员
 admin_passwod = admin #默认管理员密码
+
+[ldap]
+enabled = true
+ldap_host = 172.16.23.2
+ldap_port = 389
+ldap_base_dn =
+ldap_bind_username =
+ldap_bind_password =
+ldap_username_key = uid
+ldap_mail_key = mail
 ```
 
 - 启动服务
@@ -132,7 +142,7 @@ npm install && npm run  build
 
 ### 主界面
 
-初始化部署完成后第一次登陆使用默认管理员账号密码，参考 `dagger.ini` 文件，如需注册新用户，请将 `allow_sign_up` 配置打开，按照指示注册即可。
+初始化部署完成后第一次登陆使用默认管理员账号密码，参考 `dagger.ini` 文件，如需注册新用户，请将 `allow_sign_up` 配置打开，按照指示注册即可。支持 `ldap` 登陆。
 注：用户名、密码和邮箱都是必填的
 
 <img src="images/quickstart/login.jpg" width="35%" height="35%">

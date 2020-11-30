@@ -1,6 +1,11 @@
 package utils
 
 import (
+	"crypto/tls"
+	"dagger/backend/databases"
+	"dagger/backend/models"
+	"dagger/backend/runtime"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -9,6 +14,10 @@ import (
 	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/go-ldap/ldap/v3"
+	"go.uber.org/zap"
+	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 func Exist(eles []interface{}, ele interface{}) bool {
@@ -233,4 +242,87 @@ func GenerateToken(uid int, username string, expireDuration time.Duration) (stri
 		"exp":      expire,
 	})
 	return token.SignedString([]byte("dagger-backend-secret"))
+}
+
+func LdapCheck(username string, password string) (bool, *models.User) {
+	ldapHost, _ := runtime.Cfg.GetValue("ldap", "ldap_host")
+	ldapPort, _ := runtime.Cfg.Int("ldap", "ldap_port")
+
+	conn, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", ldapHost, ldapPort))
+
+	if err != nil {
+		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap connect error: %s", err))
+		return false, nil
+	}
+	defer conn.Close()
+
+	err = conn.StartTLS(&tls.Config{
+		InsecureSkipVerify: true,
+	})
+	if err != nil {
+		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap start error: %s", err))
+		return false, nil
+	}
+
+	ldapBindUsername, _ := runtime.Cfg.GetValue("ldap", "ldap_bind_username")
+	ldapBindPassword, _ := runtime.Cfg.GetValue("ldap", "ldap_bind_password")
+	err = conn.Bind(ldapBindUsername, ldapBindPassword)
+	if err != nil {
+		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap bind error: %s", err))
+		return false, nil
+	}
+
+	base, _ := runtime.Cfg.GetValue("ldap", "ldap_base_dn")
+	usernameKey, _ := runtime.Cfg.GetValue("ldap", "ldap_username_key")
+	mailKey, _ := runtime.Cfg.GetValue("ldap", "ldap_mail_key")
+	sql := ldap.NewSearchRequest(base,
+		ldap.ScopeWholeSubtree,
+		ldap.NeverDerefAliases,
+		0,
+		0,
+		false,
+		fmt.Sprintf("(%s=%s)", usernameKey, username),
+		[]string{fmt.Sprintf("%s", usernameKey), fmt.Sprintf("%s", mailKey)},
+		nil)
+
+	var cur *ldap.SearchResult
+	if cur, err = conn.Search(sql); err != nil {
+		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap server search failed.: %s", err))
+		return false, nil
+	}
+
+	if len(cur.Entries) == 0 {
+		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap not found user."))
+		return false, nil
+	}
+
+	user := cur.Entries[0]
+	err = conn.Bind(user.DN, password)
+	if err != nil {
+		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("check user error."))
+		return false, nil
+	}
+
+	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	if err != nil {
+		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		return false, nil
+	}
+
+	var userModel = models.User{}
+	result := databases.DB.Model(&models.User{}).Where("username = ?", username).First(&userModel)
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		userModel = models.User{
+			Username:    username,
+			Password:    string(hash),
+			IsActive:    true,
+			IsSuperuser: false,
+			Email:       user.GetAttributeValue("mail"),
+			CreateAt:    time.Now().UTC(),
+			LastLoginAt: time.Now().UTC(),
+		}
+		databases.DB.Create(&userModel)
+	}
+
+	return true, &userModel
 }
