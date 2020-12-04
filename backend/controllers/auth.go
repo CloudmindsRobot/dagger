@@ -53,13 +53,14 @@ func Login(c *gin.Context) {
 			return
 		}
 	} else {
-		result := databases.DB.Model(&models.User{}).Where("username = ?", username).First(user)
+		var u models.User
+		user = &u
+		result := databases.DB.Model(&models.User{}).Where("username = ?", username).First(&u)
 		if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "不存在的用户"})
 			return
 		}
-
-		err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
+		err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 		if err != nil {
 			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "用户名或密码错误"})
 			return
