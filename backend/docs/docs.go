@@ -281,6 +281,20 @@ var doc = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "The start time for the query as a nanosecond Unix epoch",
+                        "name": "start",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The end time for the query as a nanosecond Unix epoch",
+                        "name": "end",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "The label value",
                         "name": "label",
                         "in": "path",
@@ -307,6 +321,22 @@ var doc = `{
                     "application/json"
                 ],
                 "summary": "Retrieves the list of known values for a given label within a given time span. It accepts the following query parameters in the URL",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The start time for the query as a nanosecond Unix epoch",
+                        "name": "start",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "The end time for the query as a nanosecond Unix epoch",
+                        "name": "end",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "[]",
@@ -319,7 +349,7 @@ var doc = `{
         },
         "/api/v1/loki/list/": {
             "get": {
-                "description": "limit 2000",
+                "description": "default limit 2000",
                 "consumes": [
                     "application/json"
                 ],

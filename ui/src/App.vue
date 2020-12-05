@@ -48,6 +48,11 @@ export default {
         if (res.status === 200) {
           const settings = res.data.data
           this.$store.commit('setSettings', settings)
+        } else {
+          this.$store.commit('showSnackBar', {
+            text: `Error: ${res.data.message}`,
+            color: 'error',
+          })
         }
       } catch (err) {
         this.$store.commit('showSnackBar', {

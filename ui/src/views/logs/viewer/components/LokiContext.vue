@@ -173,6 +173,11 @@ export default {
               }
             }
           }
+        } else {
+          this.$store.commit('showSnackBar', {
+            text: `Error: ${res.data.message}`,
+            color: 'error',
+          })
         }
       } catch (err) {
         this.$store.commit('showSnackBar', {

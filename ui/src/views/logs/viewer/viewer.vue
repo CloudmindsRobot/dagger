@@ -11,7 +11,10 @@
           <v-card>
             <v-card-title style="padding: 10px 20px 0 !important;">
               <span class="pr-4">
-                <loki-filter ref="lokiFilter"></loki-filter>
+                <loki-filter
+                  ref="lokiFilter"
+                  :dateRangeTimestamp.sync="dateRangeTimestamp"
+                ></loki-filter>
               </span>
               <span class="pr-4">
                 <loki-datetime-range-picker
@@ -50,12 +53,11 @@
                 >
                   限制:
                   <span class="pr-4">
-                    <v-select
+                    <v-text-field
+                      type="number"
                       v-model="limit"
-                      :items="[500, 1000, 2000, 5000, 10000]"
-                      x-small
-                      style="margin-left: 10px;width: 80px !important;"
-                    ></v-select>
+                      style="width: 60px;margin-left: 5px;"
+                    ></v-text-field>
                   </span>
                   <span class="pr-4">结果: {{ items.length }}</span>
                   <span class="pr-4">
@@ -324,7 +326,6 @@ export default {
     offset: 0,
     easing: 'easeInOutCubic',
     pod: '',
-    all: false,
     icon: 'play_circle_outline',
     websocket: null,
     timeoutHandler: null,
@@ -339,6 +340,13 @@ export default {
   },
   methods: {
     async listQueryRanges() {
+      if (this.limit > 50000) {
+        this.$store.commit('showSnackBar', {
+          text: 'Warn: 最大支持单次50000条日志输出',
+          color: 'warning',
+        })
+        return
+      }
       this.loading = true
       try {
         const filterData = {}
@@ -361,7 +369,6 @@ export default {
           middleStart: this.middleStart,
           middleEnd: this.middleEnd,
           pod: this.pod,
-          all: this.all,
           dsc: this.dsc,
           filters: this.filters,
         })
@@ -413,6 +420,11 @@ export default {
             this.pod = pod
             this.pods = [{ text: pod, selected: true }]
           }
+        } else {
+          this.$store.commit('showSnackBar', {
+            text: `Error: ${res.data.message}`,
+            color: 'error',
+          })
         }
       } catch (err) {
         this.$store.commit('showSnackBar', {
@@ -483,6 +495,11 @@ export default {
             this.downloading = false
             return null
           }
+        } else {
+          this.$store.commit('showSnackBar', {
+            text: `Error: ${res.data.message}`,
+            color: 'error',
+          })
         }
       } catch (err) {
         this.$store.commit('showSnackBar', {
@@ -526,7 +543,6 @@ export default {
       } else {
         this.$refs.lokiHistogram.legendSelected = histogramLegends
       }
-      this.all = false
       this.listQueryRanges()
     },
     async handleSaveResult() {
@@ -587,7 +603,6 @@ export default {
       this.level = []
       this.pod = ''
       this.pods = []
-      this.all = true
       this.legends.forEach((item) => {
         item.selected = false
       })
@@ -614,7 +629,6 @@ export default {
         }
       })
       this.pod = filterPod.join('|')
-      this.all = false
       this.listQueryRanges()
     },
     handlerParams() {
@@ -707,9 +721,9 @@ export default {
         this.handlerClose()
       }
     },
-    async listLabels() {
+    async listLabels(data) {
       try {
-        const res = await listLabels()
+        const res = await listLabels(data)
         if (res.status === 200) {
           this.labels = res.data
         }
@@ -733,7 +747,7 @@ export default {
   async mounted() {
     if (this.$store.state.jwt) {
       this.$refs.dateRangePicker.handlerChangeQuickTime(5)
-      await this.listLabels()
+      await this.listLabels({})
       const pod = this.$route.query['pod']
       const start = this.$route.query['start']
       const end = this.$route.query['end']
@@ -779,7 +793,6 @@ export default {
           this.pod = pod
           this.pods = [{ text: pod, selected: true }]
         }
-        this.all = true
         this.listQueryRanges()
       }
     }

@@ -29,12 +29,20 @@ spec:
               value: http://loki.infra:3100
           ports:
             - containerPort: 8000
-          resources: {}
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 256Mi
           volumeMounts:
             - mountPath: /usr/src/app/static
               name: static-data
             - mountPath: /usr/src/app/db
               name: sqlite-data
+            - mountPath: /etc/dagger
+              name: dagger-conf
       restartPolicy: Always
       serviceAccountName: ""
       volumes:
@@ -44,6 +52,10 @@ spec:
         - name: sqlite-data
           persistentVolumeClaim:
             claimName: sqlite-data
+        - name: dagger-conf
+          configMap:
+            defaultMode: 420
+            name: dagger-conf
 ---
 apiVersion: v1
 kind: Service
@@ -84,6 +96,17 @@ spec:
   resources:
     requests:
       storage: 5Gi
+---
+apiVersion: v1
+data:
+  dagger.ini: |
+    [users]
+    allow_sign_up = false
+    admin_username = admin
+    admin_passwod = admin
+kind: ConfigMap
+metadata:
+  name: dagger-conf
 ---
 apiVersion: apps/v1
 kind: Deployment

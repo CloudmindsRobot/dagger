@@ -173,6 +173,16 @@ paths:
       - application/json
       description: limit 2000
       parameters:
+      - description: The start time for the query as a nanosecond Unix epoch
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The end time for the query as a nanosecond Unix epoch
+        in: path
+        name: end
+        required: true
+        type: string
       - description: The label value
         in: path
         name: label
@@ -191,6 +201,17 @@ paths:
       consumes:
       - application/json
       description: limit 2000
+      parameters:
+      - description: The start time for the query as a nanosecond Unix epoch
+        in: path
+        name: start
+        required: true
+        type: string
+      - description: The end time for the query as a nanosecond Unix epoch
+        in: path
+        name: end
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -203,7 +224,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: limit 2000
+      description: default limit 2000
       parameters:
       - description: The start time for the query as a nanosecond Unix epoch
         in: path

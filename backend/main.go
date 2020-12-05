@@ -1,10 +1,10 @@
 package main
 
 import (
-	"dagger/backend/gin/databases"
-	router "dagger/backend/gin/routers"
-	"dagger/backend/gin/runtime"
-	"dagger/backend/gin/utils"
+	"dagger/backend/databases"
+	router "dagger/backend/routers"
+	"dagger/backend/runtime"
+	"dagger/backend/utils"
 	"fmt"
 	"os"
 
