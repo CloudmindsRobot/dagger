@@ -83,19 +83,19 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./docker-compose/Dockerfile.backend
+          file: ./build-image/Dockerfile.backend
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           # push: false
-          tags: quay.io/cloudminds/dagger-backend:${{ steps.prepare.outputs.tags }}
+          tags: quay.io/CloudXiaobai/dagger-backend:${{ steps.prepare.outputs.tags }}
 
       - name: Build ui and push
         id: docker_build_ui
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./docker-compose/Dockerfile.ui
+          file: ./build-image/Dockerfile.ui
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           # push: false
-          tags: quay.io/cloudminds/dagger-ui:${{ steps.prepare.outputs.tags }}
+          tags: quay.io/CloudXiaobai/dagger-ui:${{ steps.prepare.outputs.tags }}

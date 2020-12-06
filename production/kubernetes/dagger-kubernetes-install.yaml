@@ -1,21 +1,101 @@
+apiVersion: v1
+data:
+  dagger.ini: |
+    [users]
+    ; 允许注册
+    allow_sign_up = false
+    admin_username = admin
+    admin_passwod = admin
+    
+    [ldap]
+    enabled = false
+    ldap_host = ldap
+    ldap_port = 389
+    ldap_base_dn =
+    ldap_bind_username =
+    ldap_bind_password =
+    ldap_username_key = uid
+    ldap_mail_key = mail
+kind: ConfigMap
+metadata:
+  name: dagger-conf
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: dagger-service
+    dagger.backend: sqlite
+  name: sqlite-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: dagger-service
+    dagger.backend: static
+  name: static-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: dagger-backend
+  name: dagger-backend
+spec:
+  ports:
+    - name: "8000"
+      port: 8000
+      targetPort: 8000
+  selector:
+    app: dagger-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: dagger-ui
+  name: dagger-ui
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+  selector:
+    app: dagger-ui
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    dagger.service: backend
-  name: backend
+    app: dagger-backend
+  name: dagger-backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      dagger.service: backend
+      app: dagger-backend
   strategy:
     type: Recreate
   template:
     metadata:
       labels:
-        dagger.network/dagger: "true"
-        dagger.service: backend
+        app: dagger-backend
     spec:
       containers:
         - args:
@@ -26,7 +106,8 @@ spec:
           name: dagger-backend
           env:
             - name: LOKI_SERVER
-              value: http://loki.infra:3100
+              # your loki service endpoint
+              value: http://172.16.31.102:3100
           ports:
             - containerPort: 8000
           resources:
@@ -44,7 +125,6 @@ spec:
             - mountPath: /etc/dagger
               name: dagger-conf
       restartPolicy: Always
-      serviceAccountName: ""
       volumes:
         - name: static-data
           persistentVolumeClaim:
@@ -56,75 +136,23 @@ spec:
           configMap:
             defaultMode: 420
             name: dagger-conf
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    dagger.service: backend
-  name: dagger-backend
-spec:
-  ports:
-    - name: "8000"
-      port: 8000
-      targetPort: 8000
-  selector:
-    dagger.service: backend
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    dagger.service: sqlite-data
-  name: sqlite-data
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  labels:
-    dagger.service: static-data
-  name: static-data
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 5Gi
----
-apiVersion: v1
-data:
-  dagger.ini: |
-    [users]
-    allow_sign_up = false
-    admin_username = admin
-    admin_passwod = admin
-kind: ConfigMap
-metadata:
-  name: dagger-conf
+
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    dagger.service: ui
+    app: dagger-ui
   name: dagger-ui
 spec:
   replicas: 1
   selector:
     matchLabels:
-      dagger.service: ui
-  strategy: {}
+      app: dagger-ui
   template:
     metadata:
       labels:
-        dagger.network/dagger: "true"
-        dagger.service: ui
+        app: dagger-ui
     spec:
       containers:
         - image: quay.io/cloudminds/dagger-ui:latest
@@ -132,17 +160,3 @@ spec:
           ports:
             - containerPort: 8080
       restartPolicy: Always
----
-apiVersion: v1
-kind: Service
-metadata:
-  labels:
-    dagger.service: ui
-  name: dagger-ui
-spec:
-  ports:
-    - name: "8080"
-      port: 8080
-      targetPort: 8080
-  selector:
-    dagger.service: ui
