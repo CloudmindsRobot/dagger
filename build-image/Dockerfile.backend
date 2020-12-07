@@ -8,7 +8,7 @@ RUN go mod download && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o dagger 
 FROM ubuntu:18.04 as backend
 WORKDIR /usr/src/app
 COPY --from=builder /go/src/dagger/dagger .
-COPY ./backend/dagger.ini /etc/dagger/dagger.ini
+COPY ../backend/dagger.ini /etc/dagger/dagger.ini
 LABEL MAINTAINER="leon.chen"
 
 RUN apt-get update
