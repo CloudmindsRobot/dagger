@@ -120,17 +120,10 @@ export default {
           })
         }
       } catch (err) {
-        if (err.response && err.response.status === 400) {
-          this.$store.commit('showSnackBar', {
-            text: `Error: ${JSON.stringify(err.response.data)}`,
-            color: 'error',
-          })
-        } else {
-          this.$store.commit('showSnackBar', {
-            text: 'Error: 创建用户失败',
-            color: 'error',
-          })
-        }
+        this.$store.commit('showSnackBar', {
+          text: 'Error: 创建用户失败',
+          color: 'error',
+        })
       }
     },
     contrastPassword() {

@@ -25,7 +25,7 @@ axios.interceptors.response.use(
     if (error.response.status === 400) {
       store.commit('clearSnackBar')
       store.commit('showSnackBar', {
-        text: 'Error: ' + error.response.data.data,
+        text: 'Error: ' + error.response.data.message,
         color: 'error',
       })
     }
