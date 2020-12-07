@@ -7,7 +7,7 @@ FROM nginx:alpine as ui
 LABEL MAINTAINER="leon.chen"
 WORKDIR /usr/src/app
 
-COPY --from=builder /usr/src/app/ui/ng-dagger.conf /etc/nginx/conf.d/ng-dagger.conf
+COPY --from=builder /usr/src/app/ng-dagger.conf /etc/nginx/conf.d/ng-dagger.conf
 COPY --from=builder /usr/src/app/dist dist
 
 CMD ["nginx", "-g", "daemon off;"]
