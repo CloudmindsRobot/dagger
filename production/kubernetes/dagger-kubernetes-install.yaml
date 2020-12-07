@@ -2,7 +2,7 @@ apiVersion: v1
 data:
   dagger.ini: |
     [users]
-    ; 允许注册
+    ; allow register
     allow_sign_up = false
     admin_username = admin
     admin_passwod = admin
@@ -107,7 +107,7 @@ spec:
           env:
             - name: LOKI_SERVER
               # your loki service endpoint
-              value: http://172.16.31.102:3100
+              value: http://<LOKI_ENDPOINT>:3100
           ports:
             - containerPort: 8000
           resources:
@@ -117,7 +117,7 @@ spec:
             requests:
               cpu: 500m
               memory: 256Mi
-          volumeMounts:
+          volumkeMounts:
             - mountPath: /usr/src/app/static
               name: static-data
             - mountPath: /usr/src/app/db
