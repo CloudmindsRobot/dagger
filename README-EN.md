@@ -29,16 +29,19 @@ A quick start for local deployment: [Quick Start](#jump)
 
 - **Manage mutiple Grafana Loki Instances**
 
-  - Mutiple Loki instances could be managed in one Dagger, and Log query request could be dealt accrossing mutiple Loki instances.
+  - Simply log query,no complicated LogQL syntax
+  - private query history per users
+  - log snapshot for results ,and free download
+  - real time log stream
 
-- **Log Alarm**
+# RoadMap
 
-  - Support adding log metric with LogQL in Dagger web interface
-  - Support Loki-Ruler. Ruler could be edit and pushed in Dagger web interface
-  - Support Log Alarm event subscription, aggregation and muti ways notification.
-
-- **Easy to deploy**
-  - One click to deploy Dagger, Loki and mutiple log client
+- **Log Alert**
+  
+  - Support log rules add/edit/save/apply on dagger
+  - Compatible with AlertManager API, accepts alarm event push from Loki Ruler
+  - Log event aggregation, analysis, and alerting
+  - Support mail, aliyun(sms/voice) notifications
 
 # Usage
 

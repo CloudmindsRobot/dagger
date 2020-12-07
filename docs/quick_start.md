@@ -33,47 +33,50 @@ helm repo add loki https://grafana.github.io/loki/charts
 
 ### Kubernetes
 
-进入源码目录，编辑 `kubernetes/quickstart.yaml` 文件中的环境变量，指向 Loki 服务，例如：
+进入源码目录，编辑 `production/kubernetes/dagger-kubernetes-install.yaml` 文件中的环境变量，指向 Loki 服务，例如：
 
 ```yaml
 - name: LOKI_SERVER
-  value: http://loki.infra:3100
+  value: http://loki:3100
 ```
 
 如果测试集群没有自动提供 PVC 的能力，也需要将 PVC 部分做一下修改。
 
-使用 `kubectl apply -f kubernetes/quickstart.yaml`，等 Pod 全部运行成功，就可以进行后续步骤了。
+使用 `kubectl apply -f dagger-kubernetes-install.yaml`，等 Pod 全部运行成功，就可以进行后续步骤了。
 
 ### Docker-Compose
 
 - 进入源码目录，编辑 `docker-compose.yaml` 文件
 
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   ui:
     image: quay.io/cloudminds/dagger-ui:latest
+    hostname: dagger-ui
     container_name: dagger-ui
     depends_on:
       - backend
     ports:
-      - '8080:8080'
+      - "8080:8080"
     networks:
       - dagger
   backend:
     image: quay.io/cloudminds/dagger-backend:latest
+    hostname: dagger-backend
     container_name: dagger-backend
-    env:
-      #loki服务地址
-      LOKI_SERVER: http://1.1.1.1:3100
+    environment:
+      - LOKI_SERVER=http://127.0.0.1:3100 # your loki server address (optional)
     ports:
-      - '8000:8000'
+      - "8000:8000"
+    command: ["sh", "-c", "./dagger"]
     networks:
       - dagger
-    command: ['sh', '-c', './dagger']
     volumes:
-      - 'static_data:/usr/src/app/static:rw'
-      - 'sqlite_data:/usr/src/app/db:rw'
+      - "./config/dagger.ini:/etc/dagger/dagger.ini"
+      - "static_data:/usr/src/app/static:rw"
+      - "sqlite_data:/usr/src/app/db:rw"
+
 volumes:
   sqlite_data:
     driver: local

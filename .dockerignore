@@ -10,7 +10,6 @@ static/export
 static/snapshot
 .DS_Store
 
-backend/dagger*
 backend/static
 
 ui/node_modules

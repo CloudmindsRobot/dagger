@@ -6,10 +6,11 @@ ENV GOPROXY="https://goproxy.cn"
 RUN go mod download && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o dagger backend/main.go
 
 FROM ubuntu:18.04 as backend
-WORKDIR /usr/src/app
-COPY --from=builder /go/src/dagger/dagger .
-COPY dagger.ini /etc/dagger/dagger.ini
 LABEL MAINTAINER="leon.chen"
+WORKDIR /usr/src/app
+
+COPY --from=builder /go/src/dagger/dagger .
+COPY --from=builder /go/src/dagger/backend/dagger.ini /etc/dagger/dagger.ini
 
 RUN apt-get update
 

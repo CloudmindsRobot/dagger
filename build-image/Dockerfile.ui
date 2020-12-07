@@ -4,9 +4,10 @@ COPY ui .
 RUN npm i npm@latest -g && npm install && npm run build
 
 FROM nginx:alpine as ui
-WORKDIR /usr/src/app
-COPY ./docker-compose/ng-dagger.conf /etc/nginx/conf.d/ng-dagger.conf
-COPY --from=builder /usr/src/app/dist dist
 LABEL MAINTAINER="leon.chen"
+WORKDIR /usr/src/app
+
+COPY --from=builder /usr/src/app/ng-dagger.conf /etc/nginx/conf.d/ng-dagger.conf
+COPY --from=builder /usr/src/app/dist dist
 
 CMD ["nginx", "-g", "daemon off;"]
