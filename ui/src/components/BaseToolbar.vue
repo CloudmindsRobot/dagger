@@ -22,7 +22,13 @@
     <v-spacer></v-spacer>
 
     <template v-for="item in items">
-      <v-menu offset-y v-if="item.children" :key="item.title">
+      <v-menu
+        offset-y
+        v-if="item.children"
+        :key="item.title"
+        attach
+        content-class="zoom-menu"
+      >
         <template v-slot:activator="{ on }">
           <v-btn v-on="on" icon :title="item.title">
             <v-icon>{{ item.icon }}</v-icon>
@@ -108,5 +114,8 @@ export default {
 a {
   text-decoration: none;
   color: inherit;
+}
+.zoom-menu {
+  left: 1760px !important;
 }
 </style>

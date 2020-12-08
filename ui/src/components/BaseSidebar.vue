@@ -4,6 +4,7 @@
     app
     mobile-breakpoint="10000"
     class="mt-12 pt-5"
+    style="height: 100%;"
   >
     <v-list dense>
       <template v-for="item in items">
