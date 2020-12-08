@@ -63,6 +63,7 @@ export default {
     },
   },
   async mounted() {
+    document.getElementsByTagName('body')[0].style.zoom = 0.9
     await this.loadSettings()
   },
 }

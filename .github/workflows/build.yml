@@ -87,7 +87,7 @@ jobs:
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           # push: false
-          tags: quay.io/cloudxiaobai/dagger-backend:${{ steps.prepare.outputs.tags }}
+          tags: quay.io/cloudminds/dagger-backend:${{ steps.prepare.outputs.tags }}
 
       - name: Build ui and push
         id: docker_build_ui
@@ -98,4 +98,4 @@ jobs:
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
           # push: false
-          tags: quay.io/cloudxiaobai/dagger-ui:${{ steps.prepare.outputs.tags }}
+          tags: quay.io/cloudminds/dagger-ui:${{ steps.prepare.outputs.tags }}

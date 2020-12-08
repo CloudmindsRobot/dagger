@@ -14,7 +14,7 @@
     v-model="model"
     dense
     no-data-text="无数据"
-    style="min-width: 1150px !important;"
+    style="min-width: 1300px !important;"
     ref="filter"
     :loading="loading"
     :hide-no-data="!filter"
