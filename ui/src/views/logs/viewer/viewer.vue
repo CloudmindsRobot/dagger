@@ -10,12 +10,10 @@
         <v-flex xs12>
           <v-card>
             <v-card-title style="padding: 10px 20px 0 !important;">
-              <span class="pr-4">
-                <loki-filter
-                  ref="lokiFilter"
-                  :dateRangeTimestamp.sync="dateRangeTimestamp"
-                ></loki-filter>
-              </span>
+              <loki-filter
+                ref="lokiFilter"
+                :dateRangeTimestamp.sync="dateRangeTimestamp"
+              ></loki-filter>
               <span class="pr-4">
                 <loki-datetime-range-picker
                   ref="dateRangePicker"
