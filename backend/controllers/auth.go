@@ -11,7 +11,6 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
@@ -149,7 +148,8 @@ func Register(c *gin.Context) {
 // @Success 200 {string} string	"{}"
 // @Router /api/v1/loki/auth/userinfo/ [get]
 func GetUserInfo(c *gin.Context) {
-	user := sessions.Default(c).Get("user").(models.User)
+	userI, _ := c.Get("user")
+	user := userI.(models.User)
 
 	c.AbortWithStatusJSON(200, gin.H{"success": true, "user": map[string]string{"username": user.Username}})
 	return

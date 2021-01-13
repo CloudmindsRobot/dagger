@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -60,14 +59,13 @@ func JWTCheck() gin.HandlerFunc {
 				return
 			}
 			if userInfo["exp"].(float64) > float64(time.Now().Unix()) {
-				session := sessions.Default(c)
 				var user models.User
 				result := databases.DB.Where("username = ?", userInfo["username"].(string)).First(&user)
 				if errors.Is(result.Error, gorm.ErrRecordNotFound) {
 					c.AbortWithStatusJSON(401, map[string]interface{}{"msg": "no user"})
 					return
 				} else {
-					session.Set("user", user)
+					c.Set("user", user)
 				}
 				c.Next()
 			} else {

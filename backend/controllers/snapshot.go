@@ -16,7 +16,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -38,7 +37,8 @@ func LokiSnapshotList(c *gin.Context) {
 	var total int64
 	var snapshots []models.LogSnapshot
 
-	user := sessions.Default(c).Get("user").(models.User)
+	userI, _ := c.Get("user")
+	user := userI.(models.User)
 	countDB := databases.DB.Order("id desc").Model(&models.LogSnapshot{}).Where("user_id = ?", user.ID)
 	dataDB := databases.DB.Order("id desc").Offset((page-1)*pageSize).Limit(pageSize).Preload("User").Where("user_id = ?", user.ID)
 
@@ -150,7 +150,8 @@ func LokiSnapshotCreate(c *gin.Context) {
 		startTime, _ := time.ParseInLocation("2006-01-02 15:04:05", postData["start_time"].(string), t)
 		endTime, _ := time.ParseInLocation("2006-01-02 15:04:05", postData["end_time"].(string), t)
 
-		user := sessions.Default(c).Get("user").(models.User)
+		userI, _ := c.Get("user")
+		user := userI.(models.User)
 		snapshot := models.LogSnapshot{
 			Name:        filename,
 			CreateAt:    time.Now(),

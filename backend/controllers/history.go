@@ -10,7 +10,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 )
@@ -37,11 +36,14 @@ func LokiHistoryCreate(c *gin.Context) {
 	labelJSON := postData["label_json"].(string)
 	filterJSON := postData["filter_json"].(string)
 
+	userI, _ := c.Get("user")
+	user := userI.(models.User)
+
 	history := models.LogHistory{
 		LabelJSON:  labelJSON,
 		FilterJSON: filterJSON,
 		CreateAt:   time.Now(),
-		User:       sessions.Default(c).Get("user").(models.User),
+		UserID:     user.ID,
 	}
 	databases.DB.Save(&history)
 
@@ -65,7 +67,8 @@ func LokiHistoryList(c *gin.Context) {
 	var total int64
 	var historys []models.LogHistory
 
-	user := sessions.Default(c).Get("user").(models.User)
+	userI, _ := c.Get("user")
+	user := userI.(models.User)
 	countDB := databases.DB.Order("id desc").Model(&models.LogHistory{}).Where("user_id = ?", user.ID)
 	dataDB := databases.DB.Order("id desc").Offset((page-1)*pageSize).Limit(pageSize).Preload("User").Where("user_id = ?", user.ID)
 
