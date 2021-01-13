@@ -17,7 +17,7 @@ var (
 
 func init() {
 	var err error
-	Cfg, err = goconfig.LoadConfigFile("dagger.ini")
+	Cfg, err = goconfig.LoadConfigFile("backend/dagger.ini")
 	if err != nil {
 		Cfg, err = goconfig.LoadConfigFile("/etc/dagger/dagger.ini")
 		if err != nil {
