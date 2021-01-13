@@ -540,22 +540,26 @@ func LokiTail(c *gin.Context) {
 	chanSendMessage := make(chan utils.WsMessage)
 	chanReceiveMessage := make(chan utils.WsMessage)
 	chanSignal := make(chan int)
-	defer close(chanSendMessage)
-	defer close(chanReceiveMessage)
 
 	go utils.WebSocketClientHandler(clientConnect, chanSendMessage, chanSignal)
 	go utils.WebSocketServerHandler(serverConnect, chanReceiveMessage, chanSignal)
 
 	for {
 		select {
-		case wsClientMessage := <-chanSendMessage:
+		case wsClientMessage, ok := <-chanSendMessage:
+			if !ok {
+				return
+			}
 			data := utils.LokiWebsocketMessageConstruct(wsClientMessage.Data, filters)
 			err := serverConnect.WriteMessage(wsClientMessage.MessageType, data)
 			if err != nil {
 				utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("send message to viewer error, %s", err))
 				return
 			}
-		case wsServerMessage := <-chanReceiveMessage:
+		case wsServerMessage, ok := <-chanReceiveMessage:
+			if !ok {
+				return
+			}
 			data := string(wsServerMessage.Data)
 			if data == "close" {
 				return

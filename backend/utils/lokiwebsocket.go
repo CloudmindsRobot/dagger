@@ -50,11 +50,13 @@ func WebSocketClientHandler(clientConnect *websocket.Conn, ch chan WsMessage, si
 				if timer != nil {
 					timer.Stop()
 				}
+				close(ch)
 				return
 			}
 		case <-timer.C:
 			messageType, data, err := clientConnect.ReadMessage()
 			if err != nil {
+				close(ch)
 				Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("read message from loki error, %s", err))
 				timer.Stop()
 				break
@@ -88,6 +90,7 @@ func WebSocketServerHandler(serverConnect *websocket.Conn, ch chan WsMessage, si
 	for {
 		messageType, data, err := serverConnect.ReadMessage()
 		if err != nil {
+			close(ch)
 			Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("read message from viewer error, %s", err))
 			return
 		}
@@ -95,6 +98,7 @@ func WebSocketServerHandler(serverConnect *websocket.Conn, ch chan WsMessage, si
 			if string(data) == "close" {
 				signal <- 0
 				ch <- WsMessage{MessageType: messageType, Data: data}
+				close(ch)
 				return
 			}
 			ch <- WsMessage{MessageType: messageType, Data: data}

@@ -116,6 +116,7 @@ a {
   color: inherit;
 }
 .zoom-menu {
-  left: 1760px !important;
+  right: 10px;
+  left: auto !important;
 }
 </style>
