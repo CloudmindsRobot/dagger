@@ -10,7 +10,7 @@ LABEL MAINTAINER="leon.chen"
 WORKDIR /usr/src/app
 
 COPY --from=builder /go/src/dagger/dagger .
-COPY --from=builder /go/src/dagger/backend/dagger.ini /etc/dagger/dagger.ini
+COPY --from=builder /go/src/production//config/dagger.ini /etc/dagger/dagger.ini
 
 RUN apt-get update
 
