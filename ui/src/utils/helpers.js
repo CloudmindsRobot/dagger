@@ -163,10 +163,5 @@ export function formatDatetime(date, fmt) {
 }
 
 export function parserDatetime(date) {
-  const t = Date.parse(date)
-  if (!isNaN(t)) {
-    return new Date(Date.parse(date.replace(/-/g, '/')))
-  } else {
-    return new Date()
-  }
+  return new Date(Date.parse(date.replace(/-/g, '/')))
 }
