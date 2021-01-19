@@ -33,7 +33,7 @@ func Login(c *gin.Context) {
 	var postData map[string]interface{}
 	err := json.Unmarshal(postDataByte, &postData)
 	if err != nil {
-		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("%s", err))
 		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 		return
 	}
@@ -90,7 +90,7 @@ func Register(c *gin.Context) {
 	var postData map[string]interface{}
 	err := json.Unmarshal(postDataByte, &postData)
 	if err != nil {
-		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("%s", err))
 		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 		return
 	}
@@ -120,7 +120,7 @@ func Register(c *gin.Context) {
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("%s", err))
 		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 		return
 	}

@@ -49,7 +49,7 @@ helm repo add loki https://grafana.github.io/loki/charts
 - 进入源码目录，编辑 `docker-compose.yaml` 文件
 
 ```yaml
-version: "3.8"
+version: '3.8'
 services:
   ui:
     image: quay.io/cloudminds/dagger-ui:latest
@@ -58,7 +58,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "8080:8080"
+      - '8080:8080'
     networks:
       - dagger
   backend:
@@ -68,14 +68,14 @@ services:
     environment:
       - LOKI_SERVER=http://127.0.0.1:3100 # your loki server address (optional)
     ports:
-      - "8000:8000"
-    command: ["sh", "-c", "./dagger"]
+      - '8000:8000'
+    command: ['sh', '-c', './dagger']
     networks:
       - dagger
     volumes:
-      - "./config/dagger.ini:/etc/dagger/dagger.ini"
-      - "static_data:/usr/src/app/static:rw"
-      - "sqlite_data:/usr/src/app/db:rw"
+      - './config/dagger.ini:/etc/dagger/dagger.ini'
+      - 'static_data:/usr/src/app/static:rw'
+      - 'sqlite_data:/usr/src/app/db:rw'
 
 volumes:
   sqlite_data:
@@ -128,7 +128,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dagger backend/main.go
 - 编译前端
 
 ```
-npm install && npm run  build
+yarn install && yarn build
 ```
 
 - 将生成的 `dist` 文件下复制到本地路径下， 例如 `/usr/src/`

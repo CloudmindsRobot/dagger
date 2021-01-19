@@ -145,38 +145,36 @@ export default {
       try {
         const res = await listContext(data)
         if (res.status === 200) {
-          if (res.data) {
-            if (data.direction === 'preview') {
-              res.data.sort((a, b) => {
-                return a.timestamp - b.timestamp
+          if (data.direction === 'preview') {
+            res.data.sort((a, b) => {
+              return a.timestamp - b.timestamp
+            })
+            if (data.append) {
+              res.data.reverse()
+              this.itemsPreview.reverse()
+              res.data.forEach((item) => {
+                this.itemsPreview.push(item)
               })
-              if (data.append) {
-                res.data.reverse()
-                this.itemsPreview.reverse()
-                res.data.forEach((item) => {
-                  this.itemsPreview.push(item)
-                })
-                this.itemsPreview.reverse()
-              } else {
-                this.itemsPreview = res.data
-              }
-            } else if (data.direction === 'next') {
-              res.data.sort((a, b) => {
-                return a.timestamp - b.timestamp
+              this.itemsPreview.reverse()
+            } else {
+              this.itemsPreview = res.data
+            }
+          } else if (data.direction === 'next') {
+            res.data.sort((a, b) => {
+              return a.timestamp - b.timestamp
+            })
+            if (data.append) {
+              res.data.forEach((item) => {
+                this.itemsNext.push(item)
               })
-              if (data.append) {
-                res.data.forEach((item) => {
-                  this.itemsNext.push(item)
-                })
-              } else {
-                this.itemsNext = res.data
-              }
+            } else {
+              this.itemsNext = res.data
             }
           }
         } else {
           this.$store.commit('showSnackBar', {
-            text: `Error: ${res.data.message}`,
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {

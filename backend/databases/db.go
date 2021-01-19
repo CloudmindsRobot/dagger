@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/driver/mysql"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -17,31 +18,27 @@ var (
 )
 
 func init() {
+	debug, _ := runtime.Cfg.Bool("global", "debug")
 	loglevel := logger.Default.LogMode(logger.Error)
-	if runtime.Debug {
+	if debug {
 		loglevel = logger.Default.LogMode(logger.Info)
 	}
 
 	var err error
-	// dbMode, _ := runtime.Cfg.GetValue("db", "DB_MODE")
-	// if dbMode == "sqlite" {
-	// 	path, _ := runtime.Cfg.GetValue("sqlite", "SQLITE_PATH")
-	// 	DB, err = gorm.Open(sqlite.Open(path), &gorm.Config{
-	// 		DisableForeignKeyConstraintWhenMigrating: true,
-	// 		Logger:                                   loglevel,
-	// 	})
-	// } else if dbMode == "mysql" {
-	// 	addr, _ := runtime.Cfg.GetValue("mysql", "MYSQL_ADDR")
-	// 	DB, err = gorm.Open(mysql.Open(addr), &gorm.Config{})
-	// } else {
-	// 	log.Panicf("no support database")
-	// }
-	DB, err = gorm.Open(sqlite.Open("db/dagger.db"), &gorm.Config{
-		DisableForeignKeyConstraintWhenMigrating: true,
-		Logger:                                   loglevel,
-	})
+	dbMode, _ := runtime.Cfg.GetValue("db", "mode")
+	if dbMode == "sqlite" {
+		DB, err = gorm.Open(sqlite.Open("db/dagger.db"), &gorm.Config{
+			DisableForeignKeyConstraintWhenMigrating: true,
+			Logger:                                   loglevel,
+		})
+	} else if dbMode == "mysql" {
+		addr, _ := runtime.Cfg.GetValue("db", "address")
+		DB, err = gorm.Open(mysql.Open(addr), &gorm.Config{})
+	} else {
+		log.Panicf("no support database")
+	}
 	if err != nil {
-		log.Panicf("sqlite connect error %v", err)
+		log.Panicf("db connect error %v", err)
 	}
 	if DB.Error != nil {
 		log.Panicf("database error %v", DB.Error)
@@ -68,7 +65,28 @@ func MigrateDB(db *gorm.DB) {
 	if !db.Migrator().HasTable(&models.LogHistory{}) {
 		db.Migrator().CreateTable(&models.LogHistory{})
 	}
+	if !db.Migrator().HasTable(&models.LogRule{}) {
+		db.Migrator().CreateTable(&models.LogRule{})
+	}
 	if !db.Migrator().HasTable(&models.LogSnapshot{}) {
 		db.Migrator().CreateTable(&models.LogSnapshot{})
+	}
+	if !db.Migrator().HasTable(&models.LogUserGroup{}) {
+		db.Migrator().CreateTable(&models.LogUserGroup{})
+	}
+	if !db.Migrator().HasTable(&models.LogUser{}) {
+		db.Migrator().CreateTable(&models.LogUser{})
+	}
+	if !db.Migrator().HasTable(&models.LogEvent{}) {
+		db.Migrator().CreateTable(&models.LogEvent{})
+	}
+	if !db.Migrator().HasTable(&models.LogLabel{}) {
+		db.Migrator().CreateTable(&models.LogLabel{})
+	}
+	if !db.Migrator().HasTable(&models.LogGroup{}) {
+		db.Migrator().CreateTable(&models.LogGroup{})
+	}
+	if !db.Migrator().HasTable(&models.LogEventDetail{}) {
+		db.Migrator().CreateTable(&models.LogEventDetail{})
 	}
 }

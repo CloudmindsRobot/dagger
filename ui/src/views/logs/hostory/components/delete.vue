@@ -67,12 +67,15 @@ export default {
           this.$emit('refresh')
         } else {
           this.$store.commit('showSnackBar', {
-            text: 'Error: 删除查询历史失败',
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {
-        if (err.response && err.response.status !== 401) {
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
           this.$store.commit('showSnackBar', {
             text: 'Error: 删除查询历史失败',
             color: 'error',

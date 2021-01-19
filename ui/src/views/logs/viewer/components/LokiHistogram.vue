@@ -13,7 +13,7 @@
 <style scoped>
 .echarts {
   width: 100%;
-  height: 150px;
+  height: 180px;
   padding-top: 5px;
   padding: 5px 20px 0 !important;
 }
@@ -138,6 +138,17 @@ export default {
     },
   },
   methods: {
+    handerReset() {
+      this.start = 0
+      this.end = 100
+      this.legendSelected = {
+        Info: true,
+        Debug: true,
+        Warn: true,
+        Error: true,
+        Unknown: true,
+      }
+    },
     handlerDataZoom(event) {
       const splitPercent = parseInt(100 / (event.end - event.start))
       const size = splitPercent * 20

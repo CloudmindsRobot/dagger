@@ -80,6 +80,7 @@ export default {
     loading: false,
     headers: [
       { text: '查询标签', value: 'label', align: 'start' },
+      { text: 'LogQL', value: 'log_ql', align: 'start' },
       { text: '创建时间', value: 'create_at', align: 'start' },
       { text: '操作', value: 'action', align: 'start' },
     ],
@@ -104,12 +105,15 @@ export default {
           this.pageCount = Math.ceil(res.data.total / res.data.page_size)
         } else {
           this.$store.commit('showSnackBar', {
-            text: 'Error: 获取查询标签失败',
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {
-        if (err.response && err.response.status !== 401) {
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
           this.$store.commit('showSnackBar', {
             text: 'Error: 获取查询标签失败',
             color: 'error',

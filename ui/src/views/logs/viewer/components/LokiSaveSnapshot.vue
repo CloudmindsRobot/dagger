@@ -95,7 +95,10 @@ export default {
           })
         }
       } catch (err) {
-        if (err.response && err.response.status !== 401) {
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
           this.$store.commit('showSnackBar', {
             text: 'Error: 保存查询结果失败',
             color: 'error',

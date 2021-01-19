@@ -100,18 +100,20 @@ export default {
         if (res.status === 200 && res.data.success) {
           this.items = res.data.data
           this.items.forEach((item) => {
-            // item.download_url = `${window.location.host}${item.download_url}`
             item.downloading = false
           })
           this.pageCount = Math.ceil(res.data.total / res.data.page_size)
         } else {
           this.$store.commit('showSnackBar', {
-            text: 'Error: 获取查询结果失败',
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {
-        if (err.response && err.response.status !== 401) {
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
           this.$store.commit('showSnackBar', {
             text: 'Error: 获取查询结果失败',
             color: 'error',

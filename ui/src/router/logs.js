@@ -34,4 +34,35 @@ export const logs = [
       },
     ],
   },
+  {
+    path: '/logs/alert',
+    name: 'loki-alert',
+    component: views.Root,
+    children: [
+      {
+        path: 'rule',
+        name: 'loki-rule',
+        component: views.logs.alert.LokiRule,
+        meta: {
+          requireAuth: true,
+        },
+      },
+      {
+        path: 'group',
+        name: 'loki-group',
+        component: views.logs.alert.LokiGroup,
+        meta: {
+          requireAuth: true,
+        },
+      },
+      {
+        path: 'event',
+        name: 'loki-event',
+        component: views.logs.alert.LokiEvent,
+        meta: {
+          requireAuth: true,
+        },
+      },
+    ],
+  },
 ]

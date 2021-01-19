@@ -1,88 +1,92 @@
 <template>
-  <v-combobox
-    :items="filterItems"
-    @change="handlerFilterList"
-    @blur="handlerClearFilterList"
-    @focus="handlerClearFilterList"
-    :search-input.sync="filter"
-    color="primary"
-    chips
-    hide-selected
-    label="条件过滤"
-    multiple
-    prepend-icon="filter_list"
-    v-model="model"
-    dense
-    no-data-text="无数据"
-    full-width
-    ref="filter"
-    :loading="loading"
-    :hide-no-data="!filter"
-    :disabled="disabled"
-  >
-    <template v-slot:selection="{ attrs, item, parent, selected }">
-      <v-chip
-        :input-value="selected"
-        color="primary"
-        label
-        small
-        v-bind="attrs"
-        v-if="item === Object(item)"
-      >
-        <span class="pr-2">{{ item.text }}</span>
-        <v-icon @click="handlerFilterList(item, 'close')" small>close</v-icon>
-      </v-chip>
-    </template>
-    <template v-slot:item="{ index, item }">
-      <span v-if="label">{{ item.text }}</span>
-      <span v-else>
+  <v-flex style="padding: 0;">
+    <v-combobox
+      :items="filterItems"
+      @change="handlerFilterList"
+      @blur="handlerClearFilterList"
+      @focus="handlerClearFilterList"
+      :search-input.sync="filter"
+      color="primary"
+      chips
+      hide-selected
+      label="查询"
+      multiple
+      prepend-icon="filter_list"
+      v-model="model"
+      dense
+      no-data-text="无数据"
+      full-width
+      ref="filter"
+      :loading="loading"
+      :hide-no-data="!filter"
+      :disabled="disabled"
+    >
+      <template v-slot:selection="{ attrs, item, parent, selected }">
         <v-chip
+          :input-value="selected"
           color="primary"
           label
           small
-          v-for="(v, k) in item.text.label_json"
-          :key="k"
-          style="margin:0 5px;"
+          v-bind="attrs"
+          v-if="item === Object(item)"
+          class="chip-margin"
         >
-          <span class="pr-2">标签({{ k }}):{{ v }}</span>
+          <span class="pr-2">{{ item.text }}</span>
+          <v-icon @click="handlerFilterList(item, 'close')" small>close</v-icon>
         </v-chip>
-        <v-chip
+        <span v-else>{{ item.text }}</span>
+      </template>
+      <template v-slot:item="{ index, item }">
+        <span v-if="label">{{ item.text }}</span>
+        <span v-else>
+          <v-chip
+            color="primary"
+            label
+            small
+            v-for="(v, k) in item.text.label_json"
+            :key="k"
+            class="chip-margin"
+          >
+            <span class="pr-2">标签({{ k }}):{{ v }}</span>
+          </v-chip>
+          <v-chip
+            color="primary"
+            label
+            small
+            v-for="it in item.text.filter_json"
+            :key="it"
+            class="chip-margin"
+          >
+            <span class="pr-2">正则(regex):{{ it }}</span>
+          </v-chip>
+        </span>
+      </template>
+      <template v-slot:no-data>
+        <v-list-item @click="handlerRegexFilterList">
+          <span class="subheading">正则(regex):{{ filter }}</span>
+        </v-list-item>
+      </template>
+      <template v-slot:append>
+        <v-btn
+          text
           color="primary"
-          label
           small
-          v-for="it in item.text.filter_json"
-          :key="it"
-          style="margin:0 5px;"
+          @click="handlerFilterList(null, 'quick_query')"
         >
-          <span class="pr-2">正则(regex):{{ it }}</span>
-        </v-chip>
-      </span>
-    </template>
-    <template v-slot:no-data>
-      <v-list-item @click="handlerRegexFilterList">
-        <span class="subheading">正则(regex):{{ filter }}</span>
-      </v-list-item>
-    </template>
-    <template v-slot:append>
-      <v-btn
-        text
-        color="primary"
-        small
-        @click="handlerFilterList(null, 'quick_query')"
-      >
-        快速查询
-      </v-btn>
-      <v-btn
-        color="primary"
-        text
-        small
-        :loading="saveQueryLoading"
-        @click="handlerFilterList(null, 'save_query')"
-      >
-        保存条件
-      </v-btn>
-    </template>
-  </v-combobox>
+          快速查询
+        </v-btn>
+        <v-btn
+          color="primary"
+          text
+          small
+          :loading="saveQueryLoading"
+          @click="handlerFilterList(null, 'save_query')"
+        >
+          保存查询
+        </v-btn>
+      </template>
+    </v-combobox>
+  </v-flex>
 </template>
 
 <script>
@@ -92,13 +96,19 @@ import {
   listLabels,
   createQueryHistoryLabel,
 } from '@/api'
+import LogQL from '@/mixins/log/logql'
 
 export default {
   name: 'LokiViewerFilterCombobox',
+  mixins: [LogQL],
   props: {
     dateRangeTimestamp: {
       type: Array,
       default: () => [],
+    },
+    logQL: {
+      type: String,
+      default: () => null,
     },
   },
   data: () => ({
@@ -135,10 +145,15 @@ export default {
           this.filterDict.label.items = items
         }
       } catch (err) {
-        this.$store.commit('showSnackBar', {
-          text: 'Error: 获取数据失败',
-          color: 'error',
-        })
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
+          this.$store.commit('showSnackBar', {
+            text: 'Error: 获取标签数据失败',
+            color: 'error',
+          })
+        }
       }
       this.loading = false
     },
@@ -155,19 +170,24 @@ export default {
           this.originItems = JSON.parse(JSON.stringify(items))
         } else {
           this.$store.commit('showSnackBar', {
-            text: `Error: ${res.data.message}`,
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {
-        this.$store.commit('showSnackBar', {
-          text: 'Error: 获取数据失败',
-          color: 'error',
-        })
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
+          this.$store.commit('showSnackBar', {
+            text: 'Error: 获取标签数据失败',
+            color: 'error',
+          })
+        }
       }
       this.loading = false
     },
-    handlerClearFilterList() {
+    async handlerClearFilterList() {
       this.label = true
       this.filterItems = []
       this.originItems.forEach((item) => {
@@ -177,13 +197,19 @@ export default {
         })
       })
       this.model = this.model.filter((item) => item.text.indexOf(':') > -1)
+      const logqlObj = await this.handlerLogQL(this.model, this.pod)
+      if (logqlObj !== null) {
+        this.$emit('updateLogQL', logqlObj.logql, logqlObj.filters)
+        this.obj = logqlObj
+      }
     },
     handlerRegexFilterList() {
       this.model.push({ text: '正则(regex):' + this.filter, value: 'filter' })
       this.filters.push(this.filter)
       this.handlerSearch()
     },
-    handlerSearch() {
+    async handlerSearch() {
+      this.handlerClearFilterList()
       this.$refs.filter.blur()
     },
     async handleQuickqueryList() {
@@ -197,12 +223,15 @@ export default {
           })
         } else {
           this.$store.commit('showSnackBar', {
-            text: 'Error: 获取历史查询标签失败',
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {
-        if (err.response && err.response.status !== 401) {
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
           this.$store.commit('showSnackBar', {
             text: 'Error: 获取历史查询标签失败',
             color: 'error',
@@ -220,36 +249,36 @@ export default {
       }
       if (this.saveQueryLoading) return
       this.saveQueryLoading = true
-      const filters = []
-      const labels = {}
-      this.model.forEach((item) => {
-        if (item.value === 'filter') {
-          filters.push(item.text.substr(item.text.indexOf(':') + 1))
-        } else {
-          labels[item.value] = item.text.substr(item.text.indexOf(':') + 1)
-        }
-      })
+
       try {
+        delete this.obj.labels.filters
+        delete this.obj.labels.pod
         const res = await createQueryHistoryLabel({
-          label_json: JSON.stringify(labels),
-          filter_json: JSON.stringify(filters),
+          label_json: JSON.stringify(this.obj.labels),
+          filter_json: JSON.stringify(this.obj.filters),
+          log_ql: this.obj.logql,
         })
         if (res.status === 201) {
           this.$store.commit('showSnackBar', {
-            text: 'Success: 保存查询条件成功',
+            text: 'Success: 保存查询成功',
             color: 'success',
           })
         } else {
           this.$store.commit('showSnackBar', {
-            text: `Error: ${res.data.message}`,
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {
-        this.$store.commit('showSnackBar', {
-          text: 'Error: 保存查询条件失败',
-          color: 'error',
-        })
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
+          this.$store.commit('showSnackBar', {
+            text: 'Error: 保存查询条件失败',
+            color: 'error',
+          })
+        }
       }
       this.saveQueryLoading = false
     },
@@ -299,6 +328,7 @@ export default {
           label.text.filter_json.forEach((item) => {
             this.model.push({ text: `正则(regex):${item}`, value: 'filter' })
           })
+          this.handlerClearFilterList()
           this.$refs.filter.blur()
         } else {
           this.label = true
@@ -307,6 +337,7 @@ export default {
           var lastModel = this.model[this.model.length - 1]
           this.filterItems = []
           if (lastModel.text.indexOf(':') > -1) {
+            this.handlerClearFilterList()
             this.$refs.filter.blur()
             return
           }
@@ -345,3 +376,8 @@ export default {
   },
 }
 </script>
+<style lang="scss" scoped>
+.chip-margin {
+  margin: 1px 3px !important;
+}
+</style>
