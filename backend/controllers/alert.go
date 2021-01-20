@@ -71,6 +71,17 @@ func LokiRuleDelete(c *gin.Context) {
 	tx.Delete(&models.LogRule{ID: id})
 	tx.Commit()
 
+	utils.CacheRule()
+
+	flush2Alertmanager, _ := runtime.Cfg.Bool("alertmanager", "enabled")
+	if flush2Alertmanager {
+		err := utils.DynamicAlertmanagerConf()
+		if err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
+			return
+		}
+	}
+
 	c.JSON(204, nil)
 	return
 }
@@ -119,6 +130,15 @@ func LokiUserGroupJoin(c *gin.Context) {
 
 	utils.CacheRule()
 
+	flush2Alertmanager, _ := runtime.Cfg.Bool("alertmanager", "enabled")
+	if flush2Alertmanager {
+		err := utils.DynamicAlertmanagerConf()
+		if err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
+			return
+		}
+	}
+
 	c.JSON(201, user)
 	return
 }
@@ -137,6 +157,15 @@ func LokiUserGroupLeave(c *gin.Context) {
 	databases.DB.Delete(&models.LogUser{}, "group_id = ? and user_id = ?", u.LogUserGroupID, u.UserID)
 
 	utils.CacheRule()
+
+	flush2Alertmanager, _ := runtime.Cfg.Bool("alertmanager", "enabled")
+	if flush2Alertmanager {
+		err := utils.DynamicAlertmanagerConf()
+		if err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
+			return
+		}
+	}
 
 	c.JSON(204, nil)
 	return
@@ -180,6 +209,15 @@ func LokiUserGroupUpdate(c *gin.Context) {
 
 	utils.CacheRule()
 
+	flush2Alertmanager, _ := runtime.Cfg.Bool("alertmanager", "enabled")
+	if flush2Alertmanager {
+		err := utils.DynamicAlertmanagerConf()
+		if err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
+			return
+		}
+	}
+
 	c.JSON(201, nil)
 	return
 }
@@ -190,6 +228,15 @@ func LokiUserGroupDelete(c *gin.Context) {
 	databases.DB.Delete(&models.LogUserGroup{ID: id})
 
 	utils.CacheRule()
+
+	flush2Alertmanager, _ := runtime.Cfg.Bool("alertmanager", "enabled")
+	if flush2Alertmanager {
+		err := utils.DynamicAlertmanagerConf()
+		if err != nil {
+			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
+			return
+		}
+	}
 
 	c.JSON(204, nil)
 	return

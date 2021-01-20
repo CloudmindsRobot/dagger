@@ -94,7 +94,7 @@ data:
 
     CREATE TABLE `log_event` (
       `id` bigint(20) NOT NULL AUTO_INCREMENT,
-      `resolve_at` datetime(6) DEFAULT NULL,
+      `resolve_at` datetime DEFAULT NULL,
       `create_at` datetime DEFAULT NULL,
       `rule_id` bigint(20) DEFAULT NULL,
       `status` varchar(24) NOT NULL,
@@ -113,7 +113,7 @@ data:
 
     CREATE TABLE `log_event_detail` (
       `id` bigint(20) NOT NULL AUTO_INCREMENT,
-      `starts_at` datetime(6) DEFAULT NULL,
+      `starts_at` datetime DEFAULT NULL,
       `summary` varchar(512) DEFAULT NULL,
       `labels` longtext,
       `description` longtext NOT NULL,
