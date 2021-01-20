@@ -1,6 +1,7 @@
 package mysql
 
 import (
+	"database/sql"
 	"fmt"
 
 	"gorm.io/gorm"
@@ -12,6 +13,58 @@ import (
 type Migrator struct {
 	migrator.Migrator
 	Dialector
+}
+
+type Column struct {
+	name              string
+	nullable          sql.NullString
+	datatype          string
+	maxlen            sql.NullInt64
+	precision         sql.NullInt64
+	scale             sql.NullInt64
+	datetimeprecision sql.NullInt64
+}
+
+func (c Column) Name() string {
+	return c.name
+}
+
+func (c Column) DatabaseTypeName() string {
+	return c.datatype
+}
+
+func (c Column) Length() (length int64, ok bool) {
+	ok = c.maxlen.Valid
+	if ok {
+		length = c.maxlen.Int64
+	} else {
+		length = 0
+	}
+	return
+}
+
+func (c Column) Nullable() (nullable bool, ok bool) {
+	if c.nullable.Valid {
+		nullable, ok = c.nullable.String == "YES", true
+	} else {
+		nullable, ok = false, false
+	}
+	return
+}
+
+func (c Column) DecimalSize() (precision int64, scale int64, ok bool) {
+	if c.precision.Valid {
+		if c.scale.Valid {
+			precision, scale, ok = c.precision.Int64, c.scale.Int64, true
+		} else {
+			precision, scale, ok = c.precision.Int64, 0, true
+		}
+	} else if c.datetimeprecision.Valid {
+		precision, scale, ok = c.datetimeprecision.Int64, 0, true
+	} else {
+		precision, scale, ok = 0, 0, false
+	}
+	return
 }
 
 func (m Migrator) FullDataTypeOf(field *schema.Field) clause.Expr {
@@ -134,4 +187,40 @@ func (m Migrator) DropConstraint(value interface{}, name string) error {
 			clause.Table{Name: stmt.Table}, clause.Column{Name: name},
 		).Error
 	})
+}
+
+func (m Migrator) ColumnTypes(value interface{}) (columnTypes []gorm.ColumnType, err error) {
+	columnTypes = make([]gorm.ColumnType, 0)
+	err = m.RunWithValue(value, func(stmt *gorm.Statement) error {
+		currentDatabase := m.DB.Migrator().CurrentDatabase()
+		columns, err := m.DB.Raw(
+			"SELECT column_name, is_nullable, data_type, character_maximum_length, "+
+				"numeric_precision, numeric_scale, datetime_precision "+
+				"FROM information_schema.columns WHERE table_schema = ? AND table_name = ?",
+			currentDatabase, stmt.Table).Rows()
+		if err != nil {
+			return err
+		}
+		defer columns.Close()
+
+		for columns.Next() {
+			var column Column
+			err = columns.Scan(
+				&column.name,
+				&column.nullable,
+				&column.datatype,
+				&column.maxlen,
+				&column.precision,
+				&column.scale,
+				&column.datetimeprecision,
+			)
+			if err != nil {
+				return err
+			}
+			columnTypes = append(columnTypes, column)
+		}
+
+		return err
+	})
+	return
 }

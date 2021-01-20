@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v2"
 
 	conf "github.com/prometheus/alertmanager/config"
+	"github.com/prometheus/common/model"
 	"go.uber.org/zap"
 )
 
@@ -53,6 +54,26 @@ func ReloadAlertmanager() error {
 	return nil
 }
 
+func ContructAlertmanagerConf(cf *conf.Config) (string, error) {
+	y, err := yaml.Marshal(cf)
+	if err != nil {
+		return "", err
+	}
+	var nj map[string]interface{}
+	err = yaml.Unmarshal(y, &nj)
+	if err != nil {
+		return "", err
+	}
+
+	nj["global"].(map[interface{}]interface{})["smtp_auth_password"] = SMTPAuthPass
+	nj["global"].(map[interface{}]interface{})["smtp_require_tls"] = false
+	b, err := yaml.Marshal(nj)
+	if err != nil {
+		return "", err
+	}
+	return string(b), err
+}
+
 func LoadAlertmanagerConf() ([]byte, error) {
 	address, _ := runtime.Cfg.GetValue("alertmanager", "address")
 
@@ -76,12 +97,12 @@ func LoadAlertmanagerConf() ([]byte, error) {
 	return b, nil
 }
 
-func Push2Alertmanager(data string) error {
+func Push2Alertmanager(data interface{}) error {
 	address, _ := runtime.Cfg.GetValue("alertmanager", "address")
 
 	url := fmt.Sprintf("/api/v2/alerts")
 
-	data, err := HttpRequest(fmt.Sprintf("%s%s", address, url), "POST", nil, data, "json")
+	_, err := HttpRequest(fmt.Sprintf("%s%s", address, url), "POST", nil, data, "json")
 	if err != nil {
 		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("push to alertmanager error %s", err))
 		return err
@@ -110,7 +131,10 @@ func DynamicAlertmanagerConf() error {
 			return err
 		}
 
+		dur, _ := model.ParseDuration("5m")
+
 		cf.Global = &conf.GlobalConfig{
+			ResolveTimeout: dur,
 			SMTPSmarthost: conf.HostPort{
 				Host: SMTPHost,
 				Port: SMTPPort,
@@ -119,9 +143,14 @@ func DynamicAlertmanagerConf() error {
 			SMTPAuthUsername: SMTPAuthUser,
 			SMTPAuthPassword: conf.Secret(SMTPAuthPass),
 		}
-		receivers := []*conf.Receiver{}
+		receivers := []*conf.Receiver{
+			&conf.Receiver{
+				Name: "default-receiver",
+			},
+		}
 		route := conf.Route{
-			Routes: []*conf.Route{},
+			Receiver: "default-receiver",
+			Routes:   []*conf.Route{},
 		}
 
 		allowSignUp, _ := runtime.Cfg.Bool("users", "allow_sign_up")
@@ -167,7 +196,10 @@ func DynamicAlertmanagerConf() error {
 
 		cf.Receivers = receivers
 		cf.Route = &route
-		content := cf.String()
+		content, err := ContructAlertmanagerConf(cf)
+		if err != nil {
+			return err
+		}
 
 		err = FlushConf2Alertmanager(content)
 		if err != nil {

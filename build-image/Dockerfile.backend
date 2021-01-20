@@ -3,7 +3,7 @@ ADD . $GOPATH/src/dagger
 WORKDIR $GOPATH/src/dagger
 ENV GO111MODULE="on"
 ENV GOPROXY="https://goproxy.cn"
-RUN go mod download && CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o dagger backend/main.go
+RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -mod=vendor -o dagger backend/main.go
 
 FROM ubuntu:18.04 as backend
 LABEL MAINTAINER="leon.chen"
@@ -11,6 +11,7 @@ WORKDIR /usr/src/app
 
 COPY --from=builder /go/src/dagger/dagger .
 COPY --from=builder /go/src/dagger/backend/dagger.ini /etc/dagger/dagger.ini
+COPY --from=builder /go/src/dagger/backend/conf /usr/src/app/conf
 
 RUN apt-get update
 

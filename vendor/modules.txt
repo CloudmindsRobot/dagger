@@ -1,5 +1,7 @@
 # github.com/Azure/go-ntlmssp v0.0.0-20200615164410-66371956d46c
 github.com/Azure/go-ntlmssp
+# github.com/KyleBanks/depth v1.2.1
+github.com/KyleBanks/depth
 # github.com/PuerkitoBio/purell v1.1.1
 github.com/PuerkitoBio/purell
 # github.com/PuerkitoBio/urlesc v0.0.0-20170810143723-de5bf2ad4578
@@ -46,11 +48,11 @@ github.com/go-ldap/ldap/v3
 github.com/go-logfmt/logfmt
 # github.com/go-openapi/jsonpointer v0.19.3
 github.com/go-openapi/jsonpointer
-# github.com/go-openapi/jsonreference v0.19.3
+# github.com/go-openapi/jsonreference v0.19.4
 github.com/go-openapi/jsonreference
-# github.com/go-openapi/spec v0.19.8
+# github.com/go-openapi/spec v0.19.14
 github.com/go-openapi/spec
-# github.com/go-openapi/swag v0.19.9
+# github.com/go-openapi/swag v0.19.11
 github.com/go-openapi/swag
 # github.com/go-playground/locales v0.13.0
 github.com/go-playground/locales
@@ -70,9 +72,7 @@ github.com/go-redis/redis/internal/proto
 github.com/go-redis/redis/internal/util
 # github.com/go-sql-driver/mysql v1.5.0
 github.com/go-sql-driver/mysql
-# github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0
-## explicit
-# github.com/golang/protobuf v1.4.0
+# github.com/golang/protobuf v1.4.2
 github.com/golang/protobuf/proto
 github.com/golang/protobuf/ptypes
 github.com/golang/protobuf/ptypes/any
@@ -91,7 +91,9 @@ github.com/gorilla/websocket
 github.com/jinzhu/inflection
 # github.com/jinzhu/now v1.1.1
 github.com/jinzhu/now
-# github.com/json-iterator/go v1.1.9
+# github.com/jpillora/backoff v1.0.0
+github.com/jpillora/backoff
+# github.com/json-iterator/go v1.1.10
 github.com/json-iterator/go
 # github.com/leodido/go-urn v1.2.0
 github.com/leodido/go-urn
@@ -101,46 +103,43 @@ github.com/mailru/easyjson/jlexer
 github.com/mailru/easyjson/jwriter
 # github.com/mattn/go-isatty v0.0.12
 github.com/mattn/go-isatty
-# github.com/mattn/go-sqlite3 v1.14.3
-github.com/mattn/go-sqlite3
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
 # github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd
 github.com/modern-go/concurrent
 # github.com/modern-go/reflect2 v1.0.1
 github.com/modern-go/reflect2
-# github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223
+# github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f
 github.com/mwitkow/go-conntrack
 # github.com/pkg/errors v0.9.1
 github.com/pkg/errors
 # github.com/prometheus/alertmanager v0.21.0
 ## explicit
 github.com/prometheus/alertmanager/config
-# github.com/prometheus/client_golang v1.6.0
+# github.com/prometheus/client_golang v1.7.1
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/internal
 # github.com/prometheus/client_model v0.2.0
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.10.0
+# github.com/prometheus/common v0.15.0
+## explicit
 github.com/prometheus/common/config
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
 github.com/prometheus/common/model
-# github.com/prometheus/procfs v0.0.11
+# github.com/prometheus/procfs v0.1.3
 github.com/prometheus/procfs
 github.com/prometheus/procfs/internal/fs
 github.com/prometheus/procfs/internal/util
-# github.com/swaggo/gin-swagger v1.2.0
+# github.com/swaggo/gin-swagger v1.3.0
 ## explicit
 github.com/swaggo/gin-swagger
 github.com/swaggo/gin-swagger/swaggerFiles
-# github.com/swaggo/swag v1.5.1
+# github.com/swaggo/swag v1.7.0
 ## explicit
 github.com/swaggo/swag
-# github.com/ugorji/go/codec v1.1.7
+# github.com/ugorji/go/codec v1.1.13
 github.com/ugorji/go/codec
-# github.com/wcharczuk/go-chart v2.0.1+incompatible
-## explicit
 # go.uber.org/atomic v1.6.0
 go.uber.org/atomic
 # go.uber.org/multierr v1.5.0
@@ -153,14 +152,12 @@ go.uber.org/zap/internal/bufferpool
 go.uber.org/zap/internal/color
 go.uber.org/zap/internal/exit
 go.uber.org/zap/zapcore
-# golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9
+# golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
 ## explicit
 golang.org/x/crypto/bcrypt
 golang.org/x/crypto/blowfish
 golang.org/x/crypto/md4
-# golang.org/x/image v0.0.0-20201208152932-35266b937fa6
-## explicit
-# golang.org/x/net v0.0.0-20200513185701-a91f0712d120
+# golang.org/x/net v0.0.0-20201110031124-69a78807bb2b
 golang.org/x/net/context
 golang.org/x/net/http/httpguts
 golang.org/x/net/http2
@@ -170,21 +167,22 @@ golang.org/x/net/internal/timeseries
 golang.org/x/net/trace
 golang.org/x/net/webdav
 golang.org/x/net/webdav/internal/xml
-# golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
+# golang.org/x/sys v0.0.0-20200930185726-fdedc70b468f
+golang.org/x/sys/internal/unsafeheader
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/text v0.3.2
+# golang.org/x/text v0.3.4
 golang.org/x/text/secure/bidirule
 golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
-# golang.org/x/tools v0.0.0-20200513201620-d5fe73897c97
+# golang.org/x/tools v0.0.0-20201120155355-20be4ac4bd6e
 golang.org/x/tools/go/ast/astutil
 golang.org/x/tools/go/buildutil
 golang.org/x/tools/go/internal/cgo
 golang.org/x/tools/go/loader
-# google.golang.org/protobuf v1.21.0
+# google.golang.org/protobuf v1.23.0
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
 google.golang.org/protobuf/internal/descfmt
@@ -215,16 +213,13 @@ google.golang.org/protobuf/runtime/protoimpl
 google.golang.org/protobuf/types/known/anypb
 google.golang.org/protobuf/types/known/durationpb
 google.golang.org/protobuf/types/known/timestamppb
-# gopkg.in/yaml.v2 v2.3.0
+# gopkg.in/yaml.v2 v2.4.0
 ## explicit
 gopkg.in/yaml.v2
-# gorm.io/driver/mysql v1.0.2
+# gorm.io/driver/mysql v1.0.3
 ## explicit
 gorm.io/driver/mysql
-# gorm.io/driver/sqlite v1.1.3
-## explicit
-gorm.io/driver/sqlite
-# gorm.io/gorm v1.20.4
+# gorm.io/gorm v1.20.11
 ## explicit
 gorm.io/gorm
 gorm.io/gorm/callbacks

@@ -9,6 +9,15 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+//
+// @Summary Get loki user list
+// @Description Get loki user list
+// @Accept  json
+// @Produce  json
+// @Param   page_size path int true "Every page count"
+// @Param   page path int true "Page index"
+// @Success 200 {string} string	"[]"
+// @Router /api/v1/loki/user [get]
 func LokiUserList(c *gin.Context) {
 	pageSizeDefault, _ := runtime.Cfg.GetValue("utils", "page_size")
 

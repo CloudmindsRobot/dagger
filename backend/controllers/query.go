@@ -33,11 +33,11 @@ var upGrader = websocket.Upgrader{
 // @Produce  json
 // @Param   start path string true "The start time for the query as a nanosecond Unix epoch"
 // @Param   end path string true "The end time for the query as a nanosecond Unix epoch"
-// @Param   all path string false "The new query to all results"
 // @Param   dsc path string true "The order to all results"
 // @Param   filter path string false "The filter condition"
 // @Param   level path string false "The log level"
 // @Param   limit path string false "The max number of entries to return"
+// @Param   logql path string true "loki query language"
 // @Success 200 {string} string	"[]"
 // @Router /api/v1/loki/list/ [get]
 func LokiList(c *gin.Context) {
@@ -47,6 +47,7 @@ func LokiList(c *gin.Context) {
 	dsc, _ := strconv.ParseBool(c.DefaultQuery("dsc", "true"))
 	start := c.DefaultQuery("start", "")
 	end := c.DefaultQuery("end", "")
+	pod := c.DefaultQuery("pod", "")
 
 	queryExpr, _ = url.QueryUnescape(queryExpr)
 
@@ -202,7 +203,9 @@ func LokiList(c *gin.Context) {
 	data := make(map[string]interface{})
 	data["query"] = queryResults
 	data["chart"] = chartResult
-	data["pod"] = podResults
+	if pod == "" {
+		data["pod"] = podResults
+	}
 	data["resultType"] = resultType
 
 	c.JSON(200, data)
@@ -260,9 +263,7 @@ func LokiLabelValues(c *gin.Context) {
 // @Produce  json
 // @Param   start path string true "The start time for the query as a nanosecond Unix epoch"
 // @Param   end path string true "The end time for the query as a nanosecond Unix epoch"
-// @Param   filter path string false "The filter condition"
-// @Param   level path string false "The log level"
-// @Param   dsc path string true "The order to all results"
+// @Param   logql path string true "loki query language"
 // @Success 200 {string} string	"[]"
 // @Router /api/v1/loki/export/ [get]
 func LokiExport(c *gin.Context) {
@@ -378,6 +379,7 @@ func LokiExport(c *gin.Context) {
 // @Produce  json
 // @Param   start path string true "The start time for the query as a nanosecond Unix epoch"
 // @Param   end path string true "The end time for the query as a nanosecond Unix epoch"
+// @Param   logql path string true "loki query language"
 // @Success 200 {string} string	"[]"
 // @Router /api/v1/loki/context/ [get]
 func LokiContext(c *gin.Context) {
@@ -446,8 +448,7 @@ func LokiContext(c *gin.Context) {
 // @Param   start path string true "The end time for the query as a nanosecond Unix epoch"
 // @Param   pod path string false "The pod filter condition to perform"
 // @Param   filter path string false "The filter condition"
-// @Param   level path string false "The log level"
-// @Param   limit path string false "The max number of entries to return"
+// @Param   logql path string true "loki query language"
 // @Success 200 {string} string	"[]"
 // @Router /ws/tail/ [get]
 func LokiTail(c *gin.Context) {
@@ -546,6 +547,15 @@ func LokiTail(c *gin.Context) {
 	}
 }
 
+//
+// @Summary Construct loki query language
+// @Description Construct loki query language
+// @Accept  json
+// @Produce  json
+// @Param   pod path string false "The pod filter condition to perform"
+// @Param   filters path string false "The filter condition"
+// @Success 200 {string} string	"[]"
+// @Router /api/v1/loki/logql/ [get]
 func TransformLogQL(c *gin.Context) {
 	filters := c.QueryArray("filters[]")
 	pod := c.DefaultQuery("pod", "")

@@ -27,10 +27,6 @@ func main() {
 		}
 	}
 
-	if runtime.Migrate {
-		databases.MigrateDB(databases.DB)
-	}
-
 	err := utils.CacheRule()
 	if err != nil {
 		utils.Log4Zap(zap.ErrorLevel).Error("init cache failed!")

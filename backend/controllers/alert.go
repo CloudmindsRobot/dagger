@@ -17,6 +17,15 @@ import (
 	"go.uber.org/zap"
 )
 
+//
+// @Summary Get loki rule list
+// @Description Get loki rule list
+// @Accept  json
+// @Produce  json
+// @Param   page_size path int true "Every page count"
+// @Param   page path int true "Page index"
+// @Success 200 {string} string	"[]"
+// @Router /api/v1/loki/rule [get]
 func LokiRuleList(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -66,6 +75,15 @@ func LokiRuleDelete(c *gin.Context) {
 	return
 }
 
+//
+// @Summary Get loki group list
+// @Description Get loki group list
+// @Accept  json
+// @Produce  json
+// @Param   page_size path int true "Every page count"
+// @Param   page path int true "Page index"
+// @Success 200 {string} string	"[]"
+// @Router /api/v1/loki/group [get]
 func LokiUserGroupList(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -124,6 +142,15 @@ func LokiUserGroupLeave(c *gin.Context) {
 	return
 }
 
+//
+// @Summary Create loki alert group api
+// @Description Create loki alert group api
+// @Accept  json
+// @Produce  json
+// @Param   group_name path string true "The group name"
+// @Param   user_id path string true "The create user id"
+// @Success 200 {string} string	"[]"
+// @Router /api/v1/loki/group/create [post]
 func LokiUserGroupCreate(c *gin.Context) {
 	var group models.LogUserGroup
 	if err := c.ShouldBindJSON(&group); err != nil {
@@ -177,6 +204,15 @@ func LokiEventDetailList(c *gin.Context) {
 	return
 }
 
+//
+// @Summary Get loki event list
+// @Description Get loki event list
+// @Accept  json
+// @Produce  json
+// @Param   page_size path int true "Every page count"
+// @Param   page path int true "Page index"
+// @Success 200 {string} string	"[]"
+// @Router /api/v1/loki/event [get]
 func LokiEventList(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("page_size", "10"))
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
@@ -303,7 +339,9 @@ func LokiEventCollect(c *gin.Context) {
 
 		flush2Alertmanager, _ := runtime.Cfg.Bool("alertmanager", "enabled")
 		if flush2Alertmanager {
-			utils.Push2Alertmanager(string(postDataByte))
+			var data interface{}
+			json.Unmarshal(postDataByte, &data)
+			utils.Push2Alertmanager(data)
 		}
 	}
 
@@ -336,33 +374,32 @@ func LokiRuleCreate(c *gin.Context) {
 		return
 	}
 
+	content, err := utils.GenerateYAML(rule)
+	if err != nil {
+		tx.Rollback()
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "生成yaml文件失败"})
+		return
+	}
+
+	result, err := utils.CreateOrUpdateRuleGroup(user.Username, content)
+	if !result {
+		tx.Rollback()
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	tx.Commit()
+
 	utils.CacheRule()
 
 	flush2Alertmanager, _ := runtime.Cfg.Bool("alertmanager", "enabled")
 	if flush2Alertmanager {
 		err := utils.DynamicAlertmanagerConf()
 		if err != nil {
-			tx.Rollback()
-			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
-			return
-		}
-	} else {
-		content, err := utils.GenerateYAML(rule)
-		if err != nil {
-			tx.Rollback()
-			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "生成yaml文件失败"})
-			return
-		}
-
-		result, err := utils.CreateOrUpdateRuleGroup(user.Username, content)
-		if !result {
-			tx.Rollback()
 			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
 			return
 		}
 	}
-
-	tx.Commit()
 
 	c.JSON(201, nil)
 	return
@@ -393,33 +430,32 @@ func LokiRuleUpdate(c *gin.Context) {
 		return
 	}
 
+	content, err := utils.GenerateYAML(rule)
+	if err != nil {
+		tx.Rollback()
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "生成yaml文件失败"})
+		return
+	}
+
+	result, err := utils.CreateOrUpdateRuleGroup(ruleOnline.User.Username, content)
+	if !result {
+		tx.Rollback()
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
+		return
+	}
+
+	tx.Commit()
+
 	utils.CacheRule()
 
 	flush2Alertmanager, _ := runtime.Cfg.Bool("alertmanager", "enabled")
 	if flush2Alertmanager {
 		err := utils.DynamicAlertmanagerConf()
 		if err != nil {
-			tx.Rollback()
-			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
-			return
-		}
-	} else {
-		content, err := utils.GenerateYAML(rule)
-		if err != nil {
-			tx.Rollback()
-			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "生成yaml文件失败"})
-			return
-		}
-
-		result, err := utils.CreateOrUpdateRuleGroup(ruleOnline.User.Username, content)
-		if !result {
-			tx.Rollback()
 			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
 			return
 		}
 	}
-
-	tx.Commit()
 
 	c.JSON(201, gin.H{"success": true, "data": rule})
 	return

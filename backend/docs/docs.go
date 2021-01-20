@@ -109,6 +109,49 @@ var doc = `{
                         "name": "end",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "loki query language",
+                        "name": "logql",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "[]",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/loki/event": {
+            "get": {
+                "description": "Get loki event list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get loki event list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Every page count",
+                        "name": "page_size",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page index",
+                        "name": "page",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -148,20 +191,80 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "The filter condition",
-                        "name": "filter",
-                        "in": "path"
+                        "description": "loki query language",
+                        "name": "logql",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "[]",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/loki/group": {
+            "get": {
+                "description": "Get loki group list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get loki group list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Every page count",
+                        "name": "page_size",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page index",
+                        "name": "page",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "[]",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/loki/group/create": {
+            "post": {
+                "description": "Create loki alert group api",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Create loki alert group api",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The group name",
+                        "name": "group_name",
+                        "in": "path",
+                        "required": true
                     },
                     {
                         "type": "string",
-                        "description": "The log level",
-                        "name": "level",
-                        "in": "path"
-                    },
-                    {
-                        "type": "string",
-                        "description": "The order to all results",
-                        "name": "dsc",
+                        "description": "The create user id",
+                        "name": "user_id",
                         "in": "path",
                         "required": true
                     }
@@ -374,12 +477,6 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "The new query to all results",
-                        "name": "all",
-                        "in": "path"
-                    },
-                    {
-                        "type": "string",
                         "description": "The order to all results",
                         "name": "dsc",
                         "in": "path",
@@ -402,6 +499,83 @@ var doc = `{
                         "description": "The max number of entries to return",
                         "name": "limit",
                         "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "loki query language",
+                        "name": "logql",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "[]",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/loki/logql/": {
+            "get": {
+                "description": "Construct loki query language",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Construct loki query language",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "The pod filter condition to perform",
+                        "name": "pod",
+                        "in": "path"
+                    },
+                    {
+                        "type": "string",
+                        "description": "The filter condition",
+                        "name": "filters",
+                        "in": "path"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "[]",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/loki/rule": {
+            "get": {
+                "description": "Get loki rule list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get loki rule list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Every page count",
+                        "name": "page_size",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page index",
+                        "name": "page",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -560,6 +734,42 @@ var doc = `{
                 }
             }
         },
+        "/api/v1/loki/user": {
+            "get": {
+                "description": "Get loki user list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Get loki user list",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Every page count",
+                        "name": "page_size",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page index",
+                        "name": "page",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "[]",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/ws/tail/": {
             "get": {
                 "description": "limit 2000",
@@ -592,15 +802,10 @@ var doc = `{
                     },
                     {
                         "type": "string",
-                        "description": "The log level",
-                        "name": "level",
-                        "in": "path"
-                    },
-                    {
-                        "type": "string",
-                        "description": "The max number of entries to return",
-                        "name": "limit",
-                        "in": "path"
+                        "description": "loki query language",
+                        "name": "logql",
+                        "in": "path",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -627,7 +832,7 @@ type swaggerInfo struct {
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = swaggerInfo{
-	Version:     "1.0.0",
+	Version:     "2.0.0",
 	Host:        "",
 	BasePath:    "/",
 	Schemes:     []string{},
