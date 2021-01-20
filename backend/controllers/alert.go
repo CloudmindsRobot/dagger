@@ -160,7 +160,7 @@ func LokiUserGroupCreate(c *gin.Context) {
 
 	userI, _ := c.Get("user")
 	user := userI.(models.User)
-	group.CreateAt = time.Now()
+	group.CreateAt = time.Now().UTC()
 	group.UserID = user.ID
 
 	databases.DB.Create(&group)
@@ -359,8 +359,8 @@ func LokiRuleCreate(c *gin.Context) {
 	tx := databases.DB.Begin()
 	userI, _ := c.Get("user")
 	user := userI.(models.User)
-	rule.CreateAt = time.Now()
-	rule.UpdateAt = time.Now()
+	rule.CreateAt = time.Now().UTC()
+	rule.UpdateAt = time.Now().UTC()
 	rule.UserID = user.ID
 	rule.Summary = rule.Description
 	labelstr := utils.StructLables(rule.Labels, rule.Name)
@@ -412,7 +412,7 @@ func LokiRuleUpdate(c *gin.Context) {
 		return
 	}
 
-	rule.UpdateAt = time.Now()
+	rule.UpdateAt = time.Now().UTC()
 	rule.Summary = rule.Description
 	labelstr := utils.StructLables(rule.Labels, rule.Name)
 	rule.Level = utils.LogLevel(labelstr)

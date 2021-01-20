@@ -299,7 +299,7 @@ func LokiExport(c *gin.Context) {
 		return
 	}
 
-	filename := fmt.Sprintf("%s.log", time.Now().Format("20060102150405"))
+	filename := fmt.Sprintf("%s.log", time.Now().UTC().Format("20060102150405"))
 	absolutePath := fmt.Sprintf("%s/static/export/%s", dir, filename)
 	file, err := os.Create(absolutePath)
 	if err != nil {

@@ -19,7 +19,7 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
-CREATE DATABASE IF NOT EXISTS log DEFAULT CHARACTER SET = utf8mb4;
+CREATE DATABASE IF NOT EXISTS log DEFAULT CHARACTER SET = utf8;
 
 # Dump of table auth_user
 # ------------------------------------------------------------
@@ -35,7 +35,7 @@ CREATE TABLE `auth_user` (
   `mobile` varchar(32) DEFAULT NULL,
   `email` varchar(128) DEFAULT NULL,
   `create_at` datetime NOT NULL,
-  `last_login_at` datetime NOT NULL,
+  `last_login_at` datetime DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -48,7 +48,7 @@ DROP TABLE IF EXISTS `log_event`;
 
 CREATE TABLE `log_event` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `resolve_at` datetime(6) DEFAULT NULL,
+  `resolve_at` datetime DEFAULT NULL,
   `create_at` datetime DEFAULT NULL,
   `rule_id` bigint(20) DEFAULT NULL,
   `status` varchar(24) NOT NULL,
@@ -67,7 +67,7 @@ DROP TABLE IF EXISTS `log_event_detail`;
 
 CREATE TABLE `log_event_detail` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `starts_at` datetime(6) DEFAULT NULL,
+  `starts_at` datetime DEFAULT NULL,
   `summary` varchar(512) DEFAULT NULL,
   `labels` longtext,
   `description` longtext NOT NULL,

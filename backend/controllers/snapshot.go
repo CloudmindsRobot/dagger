@@ -107,7 +107,7 @@ func LokiSnapshotCreate(c *gin.Context) {
 
 	dir, _ := os.Getwd()
 
-	snapshotDir := fmt.Sprintf("%s/static/snapshot/%s", dir, time.Now().Format("20060102"))
+	snapshotDir := fmt.Sprintf("%s/static/snapshot/%s", dir, time.Now().UTC().Format("20060102"))
 	cmd := fmt.Sprintf("mkdir -p %s", snapshotDir)
 	_, err = exec.Command("bash", "-c", cmd).CombinedOutput()
 	if err != nil {
@@ -154,13 +154,13 @@ func LokiSnapshotCreate(c *gin.Context) {
 		user := userI.(models.User)
 		snapshot := models.LogSnapshot{
 			Name:        filename,
-			CreateAt:    time.Now(),
+			CreateAt:    time.Now().UTC(),
 			StartTime:   startTime.Add(time.Hour * -8),
 			EndTime:     endTime.Add(time.Hour * -8),
-			DownloadURL: fmt.Sprintf("/api/v1/loki/static/snapshot/%s", fmt.Sprintf("%s/%s", time.Now().Format("20060102"), filename)),
+			DownloadURL: fmt.Sprintf("/api/v1/loki/static/snapshot/%s", fmt.Sprintf("%s/%s", time.Now().UTC().Format("20060102"), filename)),
 			Count:       count,
 			User:        user,
-			Dir:         fmt.Sprintf("static/snapshot/%s/%s", time.Now().Format("20060102"), filename),
+			Dir:         fmt.Sprintf("static/snapshot/%s/%s", time.Now().UTC().Format("20060102"), filename),
 		}
 
 		databases.DB.Create(&snapshot)

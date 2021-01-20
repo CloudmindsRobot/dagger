@@ -28,7 +28,7 @@ func LokiHistoryCreate(c *gin.Context) {
 	userI, _ := c.Get("user")
 	user := userI.(models.User)
 
-	history.CreateAt = time.Now()
+	history.CreateAt = time.Now().UTC()
 	history.User = user
 
 	databases.DB.Save(&history)

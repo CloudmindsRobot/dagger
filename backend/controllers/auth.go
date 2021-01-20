@@ -66,7 +66,7 @@ func Login(c *gin.Context) {
 		}
 	}
 
-	user.LastLoginAt = time.Now()
+	user.LastLoginAt = time.Now().UTC()
 	databases.DB.Save(&user)
 
 	token, err := utils.GenerateToken(user.ID, user.Username, time.Hour*24*7)
@@ -131,7 +131,8 @@ func Register(c *gin.Context) {
 		Email:       email,
 		IsActive:    true,
 		IsSuperuser: false,
-		CreateAt:    time.Now(),
+		CreateAt:    time.Now().UTC(),
+		LastLoginAt: time.Now().UTC(),
 	}
 
 	databases.DB.Create(&user)
