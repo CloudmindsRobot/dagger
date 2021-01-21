@@ -197,6 +197,12 @@ export default {
       setTimeout(() => {
         vue.suggestShow = false
       }, 300)
+      if (
+        this.logQL.indexOf('}') < this.logQL.lastIndexOf('|') &&
+        this.logQL.lastIndexOf('|') > -1
+      )
+        this.$emit('updateAdvanceFilter', true)
+      else this.$emit('updateAdvanceFilter', false)
     },
     handlerOpenDeriveDialog() {
       this.suggestShow = false

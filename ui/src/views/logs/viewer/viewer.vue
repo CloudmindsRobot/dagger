@@ -22,6 +22,7 @@
                 style="width: auto;"
                 ref="lokiFilterAdvance"
                 @updateQueryed="handlerQueryed"
+                @updateAdvanceFilter="handleAdvanceFilter"
                 :queryed.sync="queryed"
                 :resultType.sync="resultType"
               ></loki-filter-advance>
@@ -181,7 +182,9 @@
                       ></div>
                       <loki-context
                         v-if="
-                          filtered || (level.length > 0 && level.length < 5)
+                          filtered ||
+                            (level.length > 0 && level.length < 5) ||
+                            advancedFilterd
                         "
                         :loki.sync="item"
                         :timestamp.sync="item.info.timestamp"
@@ -326,6 +329,7 @@ export default {
     downloading: false,
     level: [],
     filtered: false,
+    advancedFilterd: false,
     dateRangeTimestamp: [],
     limit: 2000,
     size: 20,
@@ -794,8 +798,10 @@ export default {
       setTimeout(() => {
         vue.advanced = !vue.advanced
         vue.filterChangeLoading = false
-        if (!vue.advanced) vue.logQL = ''
-        else {
+        if (!vue.advanced) {
+          vue.logQL = ''
+          vue.advancedFilterd = false
+        } else {
           vue.$nextTick(() => {
             vue.$refs.lokiFilterAdvance.logQL = vue.logQL
           })
@@ -808,6 +814,9 @@ export default {
     handlerUpdateLogQL(logql, filters) {
       this.logQL = logql
       this.filters = filters
+    },
+    handleAdvanceFilter(filterd) {
+      this.advancedFilterd = filterd
     },
   },
   created() {
