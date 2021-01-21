@@ -1,10 +1,10 @@
 version: "3.8"
 services:
   ui:
-    # build:
-    #   context: ..
-    #   dockerfile: ./build-image/Dockerfile.ui
-    #   target: ui
+    build:
+      context: ..
+      dockerfile: ./build-image/Dockerfile.ui
+      target: ui
     image: quay.io/cloudminds/dagger-ui:latest
     hostname: dagger-ui
     container_name: dagger-ui
@@ -14,10 +14,10 @@ services:
       - dagger
     restart: on-failure
   backend:
-    # build:
-    #   context: ..
-    #   dockerfile: ./build-image/Dockerfile.backend
-    #   target: backend
+    build:
+      context: ..
+      dockerfile: ./build-image/Dockerfile.backend
+      target: backend
     image: quay.io/cloudminds/dagger-backend:latest
     hostname: dagger-backend
     container_name: dagger-backend

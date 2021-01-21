@@ -94,6 +94,7 @@ export default {
   data: () => ({
     breadcrumbs: [
       { text: 'ALERTS', disabled: true, href: '' },
+      { text: '日志告警', disabled: true, href: '' },
       { text: '告警规则', disabled: true },
     ],
     items: [],
