@@ -274,6 +274,7 @@ func LokiExport(c *gin.Context) {
 	start := c.DefaultQuery("start", "")
 	end := c.DefaultQuery("end", "")
 
+	queryExpr, _ = url.QueryUnescape(queryExpr)
 	if level != "" {
 		levelExpr := utils.GenerateLevelRegex(level)
 		if levelExpr != "" {
@@ -295,7 +296,7 @@ func LokiExport(c *gin.Context) {
 	_, err := exec.Command("bash", "-c", cmd).CombinedOutput()
 	if err != nil {
 		utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("mkdir error, %s", err))
-		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "创建文件下载目录失败"})
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "创建文件下载目录失败"})
 		return
 	}
 
@@ -326,6 +327,7 @@ func LokiExport(c *gin.Context) {
 
 		result, err := utils.QueryRange(queryExpr, limit, start, end, direction)
 		if err != nil {
+			utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("download expr error: %s", err))
 			index--
 			continue
 		}

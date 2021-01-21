@@ -2,7 +2,7 @@ apiVersion: v1
 data:
   dagger.ini: |
     [global]
-    debug = true
+    debug = false
     ; 邮件接收者，仅当未开启用户注册时生效
     to = 
 
