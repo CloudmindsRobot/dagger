@@ -486,7 +486,7 @@ export default {
       this.loading = false
     },
     async handlerDownloading(saving) {
-      if (this.$refs.lokiFilter.model.length === 0) {
+      if (this.logQL.length === 0 || this.logQL === '{}') {
         this.$store.commit('showSnackBar', {
           text: 'Warn: 请输入查询条件',
           color: 'warning',
