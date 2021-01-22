@@ -455,42 +455,12 @@ func LokiContext(c *gin.Context) {
 // @Router /ws/tail/ [get]
 func LokiTail(c *gin.Context) {
 	level := c.DefaultQuery("level", "")
-	pod := c.DefaultQuery("pod", "")
-
-	filtersStr := c.DefaultQuery("filters", "")
-	filters := strings.Split(filtersStr, ",")
+	queryExpr := c.DefaultQuery("logql", "")
+	filterStr := c.DefaultQuery("filters", "")
+	filters := strings.Split(filterStr, ",")
 	start := c.DefaultQuery("start", "")
 
-	queryExprArray := []string{}
-
-	t := time.Now().Unix()
-	end := fmt.Sprintf("%d000000000", t)
-	labels := utils.Labels(start, end)
-	for _, label := range labels {
-		if c.DefaultQuery(label.(string), "") != "" {
-			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
-		}
-	}
-
-	if pod != "" {
-		queryExprArray = append(queryExprArray, utils.GetPodExpr(pod))
-	}
-
-	if len(queryExprArray) == 0 {
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "缺少查询条件"})
-		return
-	}
-
-	queryExpr := fmt.Sprintf("{%s}", strings.Join(queryExprArray, ","))
-	for _, filter := range filters {
-		_, err := regexp.Compile(filter)
-		if err != nil {
-			utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("regex compile error, %s", err))
-			c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
-			return
-		}
-		queryExpr = fmt.Sprintf("%s |~ `%s`", queryExpr, strings.Trim(filter, ""))
-	}
+	queryExpr, _ = url.QueryUnescape(queryExpr)
 	if level != "" {
 		levelExpr := utils.GenerateLevelRegex(level)
 		if levelExpr != "" {

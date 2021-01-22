@@ -117,9 +117,6 @@ func LokiWebsocketMessageConstruct(data []byte, filters []string) []byte {
 
 	results := message["streams"]
 	if results != nil {
-		for _, filter := range filters {
-			filter = strings.ReplaceAll(filter, "\\\\", "\\")
-		}
 		for _, result := range results.([]interface{}) {
 			resultEle := result.(map[string]interface{})
 			stream := resultEle["stream"].(map[string]interface{})

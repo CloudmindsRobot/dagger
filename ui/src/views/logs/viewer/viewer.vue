@@ -696,7 +696,6 @@ export default {
       const data = {
         start: Date.parse(new Date()).toString() + '000000',
         level: this.level.join(','),
-        pod: this.pod,
         filters: this.filters,
         logql: encodeURIComponent(this.logQL),
       }
