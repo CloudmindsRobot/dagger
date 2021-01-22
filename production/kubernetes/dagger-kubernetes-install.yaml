@@ -288,21 +288,6 @@ metadata:
 
 ---
 apiVersion: v1
-data:
-  alertmanager.yml: |
-    global:
-      resolve_timeout: 1m
-    route:
-      receiver: default-receiver
-    receivers:
-      - name: default-receiver
-    templates: []
-kind: ConfigMap
-metadata:
-  name: alertmanager-conf
-
----
-apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   labels:
@@ -329,6 +314,21 @@ spec:
   resources:
     requests:
       storage: 5Gi
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: dagger-service
+    dagger.alertmanager: conf
+  name: alertmanager-conf
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
 
 ---
 apiVersion: v1
@@ -514,9 +514,8 @@ spec:
       restartPolicy: Always
       volumes:
         - name: alertmanager-conf
-          configMap:
-            defaultMode: 664
-            name: alertmanager-conf
+          persistentVolumeClaim:
+            claimName: alertmanager-conf
 
 ---
 apiVersion: apps/v1
