@@ -684,12 +684,16 @@ export default {
         }
       })
       this.pod = filterPod.join('|')
-      const logqlObj = await this.handlerLogQL(
-        this.$refs.lokiFilter.model,
-        this.pod,
-      )
-      if (logqlObj !== null)
-        this.handlerUpdateLogQL(logqlObj.logql, logqlObj.filters)
+      if (!this.advanced) {
+        const logqlObj = await this.handlerLogQL(
+          this.$refs.lokiFilter.model,
+          this.pod,
+        )
+        if (logqlObj !== null)
+          this.handlerUpdateLogQL(logqlObj.logql, logqlObj.filters)
+      } else {
+        this.logQL = this.$refs.lokiFilterAdvance.logQL
+      }
       this.listQueryRanges()
     },
     handlerParams() {

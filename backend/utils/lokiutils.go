@@ -163,9 +163,9 @@ func ShellHighlightShow(message string) string {
 					color = GetShellColor(strs[2])
 				}
 				if strs[1] == "1" || strs[1] == "" {
-					return fmt.Sprintf("<b style=\"color: %s !important;\">%s</b>", color, strs[3])
+					return fmt.Sprintf(`<b style="color: %s !important;">%s</b>`, color, strs[3])
 				} else {
-					return fmt.Sprintf("<b style=\"background-color: %s !important;color: slategray;\">%s</b>", color, strs[3])
+					return fmt.Sprintf(`<b style="background-color: %s !important;color: slategray;">%s</b>`, color, strs[3])
 				}
 			}
 			return item
@@ -179,7 +179,7 @@ func RegexHighlightShow(message string, filter string) string {
 	if filter != "" {
 		regFilter, _ := regexp.Compile(filter)
 		highlight = regFilter.ReplaceAllStringFunc(highlight, func(item string) string {
-			return fmt.Sprintf("<b style=\"color: #fb8c00 !important;\">%s</b>", item)
+			return fmt.Sprintf(`<b style="color: #fb8c00 !important;">%s</b>`, item)
 		})
 
 	}
