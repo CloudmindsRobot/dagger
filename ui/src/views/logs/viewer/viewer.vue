@@ -188,6 +188,7 @@
                         "
                         :loki.sync="item"
                         :timestamp.sync="item.info.timestamp"
+                        :logQL.sync="logQL"
                         style="line-height: 18px;"
                       ></loki-context>
                     </template>
