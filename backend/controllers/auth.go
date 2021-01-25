@@ -132,6 +132,7 @@ func Register(c *gin.Context) {
 		IsActive:    true,
 		IsSuperuser: false,
 		CreateAt:    time.Now(),
+		LastLoginAt: time.Now(),
 	}
 
 	databases.DB.Create(&user)
