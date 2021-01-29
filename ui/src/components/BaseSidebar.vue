@@ -86,7 +86,7 @@ export default {
   computed: {
     ...mapState(['sidebar', 'app', 'settings']),
     items() {
-      return DrawerItems(this.settings.allowSignUp).children
+      return DrawerItems(this.settings).children
     },
   },
   mounted() {

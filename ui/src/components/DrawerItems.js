@@ -1,6 +1,6 @@
-function DrawerItems(signUp) {
+function DrawerItems(settings) {
   let alertBar = []
-  if (signUp) {
+  if (settings.allowSignUp) {
     alertBar = [
       {
         text: '告警事件',
@@ -42,7 +42,7 @@ function DrawerItems(signUp) {
       },
     ]
   }
-  return {
+  const items = {
     text: 'logs',
     icon: 'notes',
     children: [
@@ -79,19 +79,24 @@ function DrawerItems(signUp) {
           },
         ],
       },
-      {
-        heading: 'ALERTS',
-      },
-      {
-        icon: 'keyboard_arrow_up',
-        'icon-alt': 'warning',
-        text: '告警',
-        model: false,
-        index: 'loki-alert',
-        children: alertBar,
-      },
     ],
   }
+
+  if (settings.alertEnabled) {
+    items.children.push({
+      heading: 'ALERTS',
+    })
+    items.children.push({
+      icon: 'keyboard_arrow_up',
+      'icon-alt': 'warning',
+      text: '告警',
+      model: false,
+      index: 'loki-alert',
+      children: alertBar,
+    })
+  }
+
+  return items
 }
 
 export default DrawerItems
