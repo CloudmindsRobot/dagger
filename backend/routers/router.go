@@ -63,22 +63,25 @@ func InitRouter() {
 	api.DELETE("/snapshot/delete/:id", controllers.LokiSnapshotDelete)
 	api.GET("/snapshot/detail/:id", controllers.LokiSnapshotDetail)
 
-	api.GET("/rule", controllers.LokiRuleList)
-	api.POST("/rule/create", controllers.LokiRuleCreate)
-	api.POST("/rule/update/:id", controllers.LokiRuleUpdate)
-	api.DELETE("/rule/delete/:id", controllers.LokiRuleDelete)
-	api.GET("/rule/download", controllers.LokiRuleDownload)
+	alertEnabled, _ := runtime.Cfg.Bool("global", "alert_enabled")
+	if alertEnabled {
+		api.GET("/rule", controllers.LokiRuleList)
+		api.POST("/rule/create", controllers.LokiRuleCreate)
+		api.POST("/rule/update/:id", controllers.LokiRuleUpdate)
+		api.DELETE("/rule/delete/:id", controllers.LokiRuleDelete)
+		api.GET("/rule/download", controllers.LokiRuleDownload)
 
-	api.GET("/group", controllers.LokiUserGroupList)
-	api.POST("/group/create", controllers.LokiUserGroupCreate)
-	api.DELETE("/group/delete/:id", controllers.LokiUserGroupDelete)
-	api.POST("/group/update/:id", controllers.LokiUserGroupUpdate)
-	api.POST("/group/join", controllers.LokiUserGroupJoin)
-	api.POST("/group/leave", controllers.LokiUserGroupLeave)
+		api.GET("/group", controllers.LokiUserGroupList)
+		api.POST("/group/create", controllers.LokiUserGroupCreate)
+		api.DELETE("/group/delete/:id", controllers.LokiUserGroupDelete)
+		api.POST("/group/update/:id", controllers.LokiUserGroupUpdate)
+		api.POST("/group/join", controllers.LokiUserGroupJoin)
+		api.POST("/group/leave", controllers.LokiUserGroupLeave)
 
-	api.POST("/event/archive", controllers.LokiEventArchive)
-	api.GET("/event", controllers.LokiEventList)
-	api.GET("/event/details/:id", controllers.LokiEventDetailList)
+		api.POST("/event/archive", controllers.LokiEventArchive)
+		api.GET("/event", controllers.LokiEventList)
+		api.GET("/event/details/:id", controllers.LokiEventDetailList)
+	}
 
 	api.GET("/user", controllers.LokiUserList)
 
