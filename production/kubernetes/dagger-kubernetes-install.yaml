@@ -5,7 +5,7 @@ data:
     debug = false
     ; 邮件接收者，仅当未开启用户注册时生效
     to = 
-    alert_enabled = true
+    alert_enabled = false
 
     [users]
     ; 允许注册
@@ -333,6 +333,21 @@ spec:
 
 ---
 apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app: dagger-mysql
+    dagger.mysql: mysql
+  name: mysql-data
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+apiVersion: v1
 kind: Service
 metadata:
   labels:
@@ -517,6 +532,14 @@ spec:
         - name: alertmanager-conf
           persistentVolumeClaim:
             claimName: alertmanager-conf
+---
+kind: Secret
+apiVersion: v1
+metadata:
+  name: mysql-pass
+data:
+  mysql-pass: MTIzNDU2
+type: Opaque
 
 ---
 apiVersion: apps/v1
@@ -542,7 +565,10 @@ spec:
           name: dagger-mysql
           env:
             - name: MYSQL_ROOT_PASSWORD
-              value: "123456"
+              valueFrom:
+                secretKeyRef:
+                  name: mysql-pass
+                  key: mysql-pass
             - name: MYSQL_DATABASE
               value: log
           ports:
@@ -557,9 +583,14 @@ spec:
           volumeMounts:
             - mountPath: /docker-entrypoint-initdb.d
               name: dagger-mysql-init
+            - mountPath: /var/lib/mysql
+              name: mysql-data
       restartPolicy: Always
       volumes:
         - name: dagger-mysql-init
           configMap:
             defaultMode: 420
             name: dagger-mysql-init
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql-data

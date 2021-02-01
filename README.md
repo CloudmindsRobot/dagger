@@ -22,19 +22,19 @@ Dagger 是一个基于 Loki 的日志查询和管理系统，它是由达闼科�
 
 # Features
 
-- 日志查询，简单的标签查询，无需复杂的LogQL语法
+- 日志查询，简单的标签查询，无需复杂的 LogQL 语法
 - 支持查询标签保存和快速查询，同时支持查询历史
-- 支持日志查询结果快照保存，防止loki日志轮转后找不到记录
+- 支持日志查询结果快照保存，防止 loki 日志轮转后找不到记录
 - 支持日志实时播放和下载功能
 
 # RoadMap
 
 - **日志告警**
 
-  - 支持界面添加日志rules编辑、保存和推送
-  - 兼容AlertManager API，接受Loki Ruler的告警事件推送
+  - 支持界面添加日志 rules 编辑、保存和推送
+  - 兼容 AlertManager API，接受 Loki Ruler 的告警事件推送
   - 日志事件聚合，分析和告警
-  - 支持邮件、阿里云SMS、阿里云Voice告警
+  - 支持邮件、阿里云 SMS、阿里云 Voice 告警
 
 - **度量**
   - 支持 LogQL 的方式在前端添加自定义日志度量
@@ -51,6 +51,10 @@ Dagger 是一个基于 Loki 的日志查询和管理系统，它是由达闼科�
   - [Loki 建议](docs/Loki_best_practice.md)
 
 * 分布式部署
+
+# 1.0 upgrade to 2.0
+
+- [1.0 upgrade to 2.0](https://github.com/CloudmindsRobot/dagger/releases/tag/2.0.1-alpha)
 
 # Release Notes
 

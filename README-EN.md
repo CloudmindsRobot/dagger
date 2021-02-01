@@ -37,7 +37,7 @@ A quick start for local deployment: [Quick Start](#jump)
 # RoadMap
 
 - **Log Alert**
-  
+
   - Support log rules add/edit/save/apply on dagger
   - Compatible with AlertManager API, accepts alarm event push from Loki Ruler
   - Log event aggregation, analysis, and alerting
@@ -55,6 +55,10 @@ Full demo vedio:（[youtube](https://youtu.be/1qc8_nZA_dM)、[bilibili](https://
   - [Loki suggestions](docs/Loki_best_practice.md)
 
 * Distributed Deployment
+
+# 1.0 upgrade to 2.0
+
+- [1.0 upgrade to 2.0](https://github.com/CloudmindsRobot/dagger/releases/tag/2.0.1-alpha)
 
 # Release Notes
 

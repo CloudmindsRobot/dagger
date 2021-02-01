@@ -1,6 +1,5 @@
 *.log
 *.log.*
-dagger
 *.db
 
 # editor
