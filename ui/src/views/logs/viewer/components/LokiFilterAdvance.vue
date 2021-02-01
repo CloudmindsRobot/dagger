@@ -16,7 +16,7 @@
       @click:clear="handlerClear"
       ref="advanceFilter"
     >
-      <template v-slot:append>
+      <template v-slot:append v-if="settings.alertEnabled">
         <v-btn text small color="primary" @click.stop="handlerOpenDeriveDialog">
           派生规则
         </v-btn>
@@ -45,13 +45,18 @@
         {{ item.value }}
       </template>
     </v-data-table>
-    <DeriveRule :logQL.sync="logQL" ref="deriveRule" />
+    <DeriveRule
+      v-if="settings.alertEnabled"
+      :logQL.sync="logQL"
+      ref="deriveRule"
+    />
   </v-flex>
 </template>
 
 <script>
 import { listLabels, listLabelAllValues } from '@/api'
 import DeriveRule from '@/views/logs/alert/components/DeriveRule'
+import { mapState } from 'vuex'
 
 export default {
   name: 'FilterAdvanced',
@@ -67,6 +72,9 @@ export default {
       type: String,
       default: () => '',
     },
+  },
+  computed: {
+    ...mapState(['settings']),
   },
   data: () => ({
     suggestShow: false,
