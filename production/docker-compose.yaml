@@ -24,8 +24,6 @@ services:
     depends_on:
       - mysql
       - alertmanager
-    # environment:
-    #   - LOKI_SERVER=http://127.0.0.1:3100 # your loki server address (optional)
     ports:
       - "8000:8000"
     command: ["sh", "-c", "./dagger"]
@@ -37,7 +35,7 @@ services:
       - "alertmanager_conf:/usr/src/app/conf:rw"
     restart: on-failure
   alertmanager:
-    image: prom/alertmanager:latest
+    image: prom/alertmanager:v0.21.0
     hostname: dagger-alertmanager
     container_name: dagger-alertmanager
     ports:
@@ -47,7 +45,7 @@ services:
     volumes:
       - "alertmanager_conf:/etc/alertmanager:rw"
   mysql:
-    image: mysql:latest
+    image: mysql:5.7
     hostname: dagger-mysql
     container_name: dagger-mysql
     environment:

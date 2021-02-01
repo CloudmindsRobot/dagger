@@ -86,7 +86,7 @@ services:
       - 'alertmanager_conf:/usr/src/app/conf:rw'
     restart: on-failure
   alertmanager:
-    image: prom/alertmanager:latest
+    image: prom/alertmanager:v0.21.0
     hostname: dagger-alertmanager
     container_name: dagger-alertmanager
     ports:
@@ -96,7 +96,7 @@ services:
     volumes:
       - 'alertmanager_conf:/etc/alertmanager:rw'
   mysql:
-    image: mysql:latest
+    image: mysql:5.7
     hostname: dagger-mysql
     container_name: dagger-mysql
     environment:

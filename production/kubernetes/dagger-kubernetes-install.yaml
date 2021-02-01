@@ -513,7 +513,7 @@ spec:
         app: dagger-alertmanager
     spec:
       containers:
-        - image: prom/alertmanager:latest
+        - image: prom/alertmanager:v0.21.0
           name: dagger-alertmanager
           ports:
             - containerPort: 9093
@@ -561,7 +561,7 @@ spec:
         app: dagger-mysql
     spec:
       containers:
-        - image: mysql:latest
+        - image: mysql:5.7
           name: dagger-mysql
           env:
             - name: MYSQL_ROOT_PASSWORD
