@@ -12,20 +12,25 @@ import (
 )
 
 // @title dagger backend api
-// @version 1.0.0
+// @version 2.0.0
 // @description this is dagger backend api server
 // @BasePath /
 func main() {
 	if runtime.LokiServer == "" {
 		runtime.LokiServer = os.Getenv("LOKI_SERVER")
 		if runtime.LokiServer == "" {
-			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("start server error: missing loki-server param or LOKI_SERVER env"))
-			return
+			runtime.LokiServer, _ = runtime.Cfg.GetValue("loki", "address")
+			if runtime.LokiServer == "" {
+				utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("start server error: missing loki-server param or LOKI_SERVER env"))
+				return
+			}
 		}
 	}
 
-	if runtime.Migrate {
-		databases.MigrateDB(databases.DB)
+	err := utils.CacheRule()
+	if err != nil {
+		utils.Log4Zap(zap.ErrorLevel).Error("init cache failed!")
+		return
 	}
 
 	db, _ := databases.DB.DB()

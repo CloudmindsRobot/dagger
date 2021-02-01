@@ -35,7 +35,7 @@ func LokiWebsocketClient(params map[string]string) *websocket.Conn {
 
 	clientConnect, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("connect loki websocket %s error: %s", u.String(), err))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("connect loki websocket %s error: %s", u.String(), err))
 		return nil
 	}
 	return clientConnect
@@ -57,7 +57,7 @@ func WebSocketClientHandler(clientConnect *websocket.Conn, ch chan WsMessage, si
 			messageType, data, err := clientConnect.ReadMessage()
 			if err != nil {
 				close(ch)
-				Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("read message from loki error, %s", err))
+				Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("read message from loki error, %s", err))
 				timer.Stop()
 				break
 			}
@@ -75,12 +75,12 @@ func LokiWebsocketServer(write http.ResponseWriter, request *http.Request) *webs
 			return true
 		},
 		Error: func(w http.ResponseWriter, r *http.Request, status int, reason error) {
-			Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("unknown error, %s", reason))
+			Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("unknown error, %s", reason))
 		},
 	}
 	serverConnect, err := upgrader.Upgrade(write, request, nil)
 	if err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("connect viewer websocket error: %s", err))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("connect viewer websocket error: %s", err))
 		return nil
 	}
 	return serverConnect
@@ -91,7 +91,7 @@ func WebSocketServerHandler(serverConnect *websocket.Conn, ch chan WsMessage, si
 		messageType, data, err := serverConnect.ReadMessage()
 		if err != nil {
 			close(ch)
-			Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("read message from viewer error, %s", err))
+			Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("read message from viewer error, %s", err))
 			return
 		}
 		if len(data) > 0 {
@@ -111,15 +111,12 @@ func LokiWebsocketMessageConstruct(data []byte, filters []string) []byte {
 	var message map[string]interface{}
 	err := json.Unmarshal(data, &message)
 	if err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("Unmarshal message error, %s", err))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("Unmarshal message error, %s", err))
 		return []byte{}
 	}
 
 	results := message["streams"]
 	if results != nil {
-		for _, filter := range filters {
-			filter = strings.ReplaceAll(filter, "\\\\", "\\")
-		}
 		for _, result := range results.([]interface{}) {
 			resultEle := result.(map[string]interface{})
 			stream := resultEle["stream"].(map[string]interface{})

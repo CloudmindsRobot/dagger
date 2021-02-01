@@ -1,10 +1,12 @@
 package clause
 
 type OnConflict struct {
-	Columns   []Column
-	Where     Where
-	DoNothing bool
-	DoUpdates Set
+	Columns      []Column
+	Where        Where
+	OnConstraint string
+	DoNothing    bool
+	DoUpdates    Set
+	UpdateAll    bool
 }
 
 func (OnConflict) Name() string {
@@ -27,6 +29,12 @@ func (onConflict OnConflict) Build(builder Builder) {
 	if len(onConflict.Where.Exprs) > 0 {
 		builder.WriteString("WHERE ")
 		onConflict.Where.Build(builder)
+		builder.WriteByte(' ')
+	}
+
+	if onConflict.OnConstraint != "" {
+		builder.WriteString("ON CONSTRAINT ")
+		builder.WriteString(onConflict.OnConstraint)
 		builder.WriteByte(' ')
 	}
 

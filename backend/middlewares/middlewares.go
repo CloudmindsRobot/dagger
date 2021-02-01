@@ -40,21 +40,25 @@ func JWTCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		JWTToken := c.Request.Header.Get("Authorization")
 		JWTToken = strings.ReplaceAll(JWTToken, "JWT ", "")
+		if JWTToken == "" {
+			cookie, _ := c.Request.Cookie("DaggerJWT")
+			JWTToken = cookie.Value
+		}
 		JWTStruct := strings.Split(JWTToken, ".")
 		if len(JWTStruct) != 3 {
-			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("jwt parse error, %s", JWTToken))
+			utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("jwt parse error, %s", JWTToken))
 			c.AbortWithStatusJSON(400, map[string]interface{}{"msg": "jwt parse error"})
 		}
 		bytes, err := base64.RawStdEncoding.DecodeString(JWTStruct[1])
 		if err != nil {
-			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("base64 decode jwt error, %s", err))
+			utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("base64 decode jwt error, %s", err))
 			c.AbortWithStatusJSON(400, map[string]interface{}{"msg": "base64 decode jwt error"})
 			return
 		} else {
 			var userInfo map[string]interface{}
 			err := json.Unmarshal(bytes, &userInfo)
 			if err != nil {
-				utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("json unmarshal jwt info error, %s", err))
+				utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("json unmarshal jwt info error, %s", err))
 				c.AbortWithStatusJSON(400, map[string]interface{}{"msg": "json unmarshal jwt info error"})
 				return
 			}
@@ -69,7 +73,7 @@ func JWTCheck() gin.HandlerFunc {
 				}
 				c.Next()
 			} else {
-				utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("jwt exprired, %s", JWTToken))
+				utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("jwt exprired, %s", JWTToken))
 				c.AbortWithStatusJSON(401, map[string]interface{}{"msg": "jwt exprired"})
 				return
 			}

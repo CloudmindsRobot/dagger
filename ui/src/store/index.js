@@ -5,7 +5,7 @@ Vue.use(Vuex)
 import { getCookie, setCookie, delCookie } from '@/utils/cookie'
 
 const CSRFTOKENNAME = 'csrftoken'
-const JWTName = 'JWT'
+const JWTName = 'DaggerJWT'
 const TimeOut = 6000
 const Username = 'username'
 const Settings = 'settings'

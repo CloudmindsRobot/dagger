@@ -1,15 +1,13 @@
 package gorm
 
 import (
-	"database/sql"
-
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
 )
 
 // Migrator returns migrator
 func (db *DB) Migrator() Migrator {
-	return db.Dialector.Migrator(db.Session(&Session{WithConditions: true}))
+	return db.Dialector.Migrator(db.Session(&Session{}))
 }
 
 // AutoMigrate run auto migration for given models
@@ -22,6 +20,14 @@ type ViewOption struct {
 	Replace     bool
 	CheckOption string
 	Query       *DB
+}
+
+type ColumnType interface {
+	Name() string
+	DatabaseTypeName() string
+	Length() (length int64, ok bool)
+	DecimalSize() (precision int64, scale int64, ok bool)
+	Nullable() (nullable bool, ok bool)
 }
 
 type Migrator interface {
@@ -42,10 +48,10 @@ type Migrator interface {
 	AddColumn(dst interface{}, field string) error
 	DropColumn(dst interface{}, field string) error
 	AlterColumn(dst interface{}, field string) error
-	MigrateColumn(dst interface{}, field *schema.Field, columnType *sql.ColumnType) error
+	MigrateColumn(dst interface{}, field *schema.Field, columnType ColumnType) error
 	HasColumn(dst interface{}, field string) bool
 	RenameColumn(dst interface{}, oldName, field string) error
-	ColumnTypes(dst interface{}) ([]*sql.ColumnType, error)
+	ColumnTypes(dst interface{}) ([]ColumnType, error)
 
 	// Views
 	CreateView(name string, option ViewOption) error

@@ -4,7 +4,7 @@ info:
   description: this is dagger backend api server
   license: {}
   title: dagger backend api
-  version: 1.0.0
+  version: 2.0.0
 paths:
   /api/v1/loki/auth/login/:
     post:
@@ -61,6 +61,11 @@ paths:
         name: end
         required: true
         type: string
+      - description: loki query language
+        in: path
+        name: logql
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -69,6 +74,30 @@ paths:
           schema:
             type: string
       summary: Get loki log context from grafana loki and accepts the following query parameters in the URL
+  /api/v1/loki/event:
+    get:
+      consumes:
+      - application/json
+      description: Get loki event list
+      parameters:
+      - description: Every page count
+        in: path
+        name: page_size
+        required: true
+        type: integer
+      - description: Page index
+        in: path
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Get loki event list
   /api/v1/loki/export/:
     get:
       consumes:
@@ -85,17 +114,9 @@ paths:
         name: end
         required: true
         type: string
-      - description: The filter condition
+      - description: loki query language
         in: path
-        name: filter
-        type: string
-      - description: The log level
-        in: path
-        name: level
-        type: string
-      - description: The order to all results
-        in: path
-        name: dsc
+        name: logql
         required: true
         type: string
       produces:
@@ -106,6 +127,54 @@ paths:
           schema:
             type: string
       summary: Download loki log to log file and accepts the following query parameters in the URL
+  /api/v1/loki/group:
+    get:
+      consumes:
+      - application/json
+      description: Get loki group list
+      parameters:
+      - description: Every page count
+        in: path
+        name: page_size
+        required: true
+        type: integer
+      - description: Page index
+        in: path
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Get loki group list
+  /api/v1/loki/group/create:
+    post:
+      consumes:
+      - application/json
+      description: Create loki alert group api
+      parameters:
+      - description: The group name
+        in: path
+        name: group_name
+        required: true
+        type: string
+      - description: The create user id
+        in: path
+        name: user_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Create loki alert group api
   /api/v1/loki/history:
     get:
       consumes:
@@ -236,10 +305,6 @@ paths:
         name: end
         required: true
         type: string
-      - description: The new query to all results
-        in: path
-        name: all
-        type: string
       - description: The order to all results
         in: path
         name: dsc
@@ -257,6 +322,11 @@ paths:
         in: path
         name: limit
         type: string
+      - description: loki query language
+        in: path
+        name: logql
+        required: true
+        type: string
       produces:
       - application/json
       responses:
@@ -265,6 +335,52 @@ paths:
           schema:
             type: string
       summary: Used to do a query over a range of time and accepts the following query parameters in the URL
+  /api/v1/loki/logql/:
+    get:
+      consumes:
+      - application/json
+      description: Construct loki query language
+      parameters:
+      - description: The pod filter condition to perform
+        in: path
+        name: pod
+        type: string
+      - description: The filter condition
+        in: path
+        name: filters
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Construct loki query language
+  /api/v1/loki/rule:
+    get:
+      consumes:
+      - application/json
+      description: Get loki rule list
+      parameters:
+      - description: Every page count
+        in: path
+        name: page_size
+        required: true
+        type: integer
+      - description: Page index
+        in: path
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Get loki rule list
   /api/v1/loki/settings/load/:
     get:
       consumes:
@@ -362,6 +478,30 @@ paths:
           schema:
             type: string
       summary: Get loki query result snapshot detail
+  /api/v1/loki/user:
+    get:
+      consumes:
+      - application/json
+      description: Get loki user list
+      parameters:
+      - description: Every page count
+        in: path
+        name: page_size
+        required: true
+        type: integer
+      - description: Page index
+        in: path
+        name: page
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: '[]'
+          schema:
+            type: string
+      summary: Get loki user list
   /ws/tail/:
     get:
       consumes:
@@ -381,13 +521,10 @@ paths:
         in: path
         name: filter
         type: string
-      - description: The log level
+      - description: loki query language
         in: path
-        name: level
-        type: string
-      - description: The max number of entries to return
-        in: path
-        name: limit
+        name: logql
+        required: true
         type: string
       produces:
       - application/json

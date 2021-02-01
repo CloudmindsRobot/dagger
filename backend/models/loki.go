@@ -27,6 +27,7 @@ type LogHistory struct {
 	FilterJSON string    `gorm:"column:filter_json;type:text" json:"filter_json"`
 	UserID     int       `gorm:"index;column:user_id;" json:"user_id"`
 	User       User      `gorm:"foreignkey:UserID;" json:"user"`
+	LogQL      string    `gorm:"column:log_ql;type:varchar(2048);" json:"log_ql"`
 }
 
 func (LogHistory) TableName() string {

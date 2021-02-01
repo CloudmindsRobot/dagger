@@ -68,7 +68,6 @@ export default {
   data: () => ({
     localSidebar: false,
     localApp: null,
-    items: DrawerItems.children,
   }),
   watch: {
     localSidebar(val) {
@@ -85,7 +84,10 @@ export default {
     },
   },
   computed: {
-    ...mapState(['sidebar', 'app']),
+    ...mapState(['sidebar', 'app', 'settings']),
+    items() {
+      return DrawerItems(this.settings).children
+    },
   },
   mounted() {
     this.localSidebar = this.sidebar

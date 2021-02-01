@@ -13,7 +13,7 @@ func preload(db *gorm.DB, rels []*schema.Relationship, conds []interface{}) {
 	var (
 		reflectValue     = db.Statement.ReflectValue
 		rel              = rels[len(rels)-1]
-		tx               = db.Session(&gorm.Session{})
+		tx               = db.Session(&gorm.Session{NewDB: true}).Model(nil).Session(&gorm.Session{SkipHooks: db.Statement.SkipHooks})
 		relForeignKeys   []string
 		relForeignFields []*schema.Field
 		foreignFields    []*schema.Field
@@ -49,7 +49,7 @@ func preload(db *gorm.DB, rels []*schema.Relationship, conds []interface{}) {
 		}
 
 		joinResults := rel.JoinTable.MakeSlice().Elem()
-		column, values := schema.ToQueryValues(rel.JoinTable.Table, joinForeignKeys, joinForeignValues)
+		column, values := schema.ToQueryValues(clause.CurrentTable, joinForeignKeys, joinForeignValues)
 		db.AddError(tx.Where(clause.IN{Column: column, Values: values}).Find(joinResults.Addr().Interface()).Error)
 
 		// convert join identity map to relation identity map
@@ -112,7 +112,7 @@ func preload(db *gorm.DB, rels []*schema.Relationship, conds []interface{}) {
 	case reflect.Struct:
 		switch rel.Type {
 		case schema.HasMany, schema.Many2Many:
-			rel.Field.Set(reflectValue, reflect.MakeSlice(rel.Field.IndirectFieldType, 0, 0).Interface())
+			rel.Field.Set(reflectValue, reflect.MakeSlice(rel.Field.IndirectFieldType, 0, 10).Interface())
 		default:
 			rel.Field.Set(reflectValue, reflect.New(rel.Field.FieldType).Interface())
 		}
@@ -120,7 +120,7 @@ func preload(db *gorm.DB, rels []*schema.Relationship, conds []interface{}) {
 		for i := 0; i < reflectValue.Len(); i++ {
 			switch rel.Type {
 			case schema.HasMany, schema.Many2Many:
-				rel.Field.Set(reflectValue.Index(i), reflect.MakeSlice(rel.Field.IndirectFieldType, 0, 0).Interface())
+				rel.Field.Set(reflectValue.Index(i), reflect.MakeSlice(rel.Field.IndirectFieldType, 0, 10).Interface())
 			default:
 				rel.Field.Set(reflectValue.Index(i), reflect.New(rel.Field.FieldType).Interface())
 			}

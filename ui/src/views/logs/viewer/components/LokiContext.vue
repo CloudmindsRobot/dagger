@@ -7,10 +7,10 @@
       <v-card>
         <v-card-text>
           <v-btn
-            v-if="itemsPreview.length > 0"
             style="margin-top: 15px;"
             text
             x-small
+            :loading="loadingPreview"
             color="primary"
             @click="handlerLoadingPreview"
             >向前加载10条数据</v-btn
@@ -18,7 +18,6 @@
           <v-data-table
             :headers="headers"
             :items="itemsPreview"
-            :loading="loading"
             loading-text="载入中..."
             item-key="info.timestamp"
             disable-pagination
@@ -71,9 +70,9 @@
             </template>
           </v-data-table>
           <v-btn
-            v-if="itemsNext.length > 0"
             text
             x-small
+            :loading="loadingNext"
             color="primary"
             @click="handlerLoadingNext"
             >向后加载10条数据</v-btn
@@ -129,12 +128,17 @@ export default {
       type: Object,
       default: () => {},
     },
+    logQL: {
+      type: String,
+      default: () => '',
+    },
   },
   data: () => ({
     show: false,
     dialog: false,
     valid: false,
-    loading: false,
+    loadingPreview: false,
+    loadingNext: false,
     itemsPreview: [],
     itemsNext: [],
     items: [],
@@ -145,38 +149,36 @@ export default {
       try {
         const res = await listContext(data)
         if (res.status === 200) {
-          if (res.data) {
-            if (data.direction === 'preview') {
-              res.data.sort((a, b) => {
-                return a.timestamp - b.timestamp
+          if (data.direction === 'preview') {
+            res.data.sort((a, b) => {
+              return a.timestamp - b.timestamp
+            })
+            if (data.append) {
+              res.data.reverse()
+              this.itemsPreview.reverse()
+              res.data.forEach((item) => {
+                this.itemsPreview.push(item)
               })
-              if (data.append) {
-                res.data.reverse()
-                this.itemsPreview.reverse()
-                res.data.forEach((item) => {
-                  this.itemsPreview.push(item)
-                })
-                this.itemsPreview.reverse()
-              } else {
-                this.itemsPreview = res.data
-              }
-            } else if (data.direction === 'next') {
-              res.data.sort((a, b) => {
-                return a.timestamp - b.timestamp
+              this.itemsPreview.reverse()
+            } else {
+              this.itemsPreview = res.data
+            }
+          } else if (data.direction === 'next') {
+            res.data.sort((a, b) => {
+              return a.timestamp - b.timestamp
+            })
+            if (data.append) {
+              res.data.forEach((item) => {
+                this.itemsNext.push(item)
               })
-              if (data.append) {
-                res.data.forEach((item) => {
-                  this.itemsNext.push(item)
-                })
-              } else {
-                this.itemsNext = res.data
-              }
+            } else {
+              this.itemsNext = res.data
             }
           }
         } else {
           this.$store.commit('showSnackBar', {
-            text: `Error: ${res.data.message}`,
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {
@@ -187,46 +189,16 @@ export default {
       }
     },
     async handlerShowLokiContext() {
-      const timestamp = (' ' + this.timestamp).slice(1)
-      const previewStart =
-        Date.parse(
-          new Date(
-            new Date(parseInt(timestamp.substr(0, 13))).setHours(
-              new Date(parseInt(timestamp.substr(0, 13))).getHours() - 3,
-            ),
-          ),
-        ) + '000000'
-      const previewEnd = (parseInt(timestamp) - 1000).toString()
-      await this.listContext(
-        Object.assign(this.loki.stream, {
-          direction: 'preview',
-          start: previewStart,
-          end: previewEnd,
-          append: false,
-        }),
-      )
-      const nextStart = (parseInt(timestamp) + 1000).toString()
-      const nextEnd =
-        Date.parse(
-          new Date(
-            new Date(parseInt(timestamp.substr(0, 13))).setHours(
-              new Date(parseInt(timestamp.substr(0, 13))).getHours() + 3,
-            ),
-          ),
-        ) + '000000'
-      await this.listContext(
-        Object.assign(this.loki.stream, {
-          direction: 'next',
-          start: nextStart,
-          end: nextEnd,
-          append: false,
-        }),
-      )
+      this.handlerLoadingPreview()
+      this.handlerLoadingNext()
       this.dialog = true
     },
     async handlerLoadingPreview() {
-      this.loading = true
-      const timestamp = (' ' + this.itemsPreview[0].timestamp).slice(1)
+      this.loadingPreview = true
+      let timestamp = (' ' + this.timestamp).slice(1)
+      if (this.itemsPreview.length > 0)
+        timestamp = (' ' + this.itemsPreview[0].timestamp).slice(1)
+
       const previewStart =
         Date.parse(
           new Date(
@@ -236,21 +208,22 @@ export default {
           ),
         ) + '000000'
       const previewEnd = (parseInt(timestamp) - 100000).toString()
-      await this.listContext(
-        Object.assign(this.loki.stream, {
-          direction: 'preview',
-          start: previewStart,
-          end: previewEnd,
-          append: true,
-        }),
-      )
-      this.loading = false
+      await this.listContext({
+        logql: this.logQL,
+        direction: 'preview',
+        start: previewStart,
+        end: previewEnd,
+        append: true,
+      })
+      this.loadingPreview = false
     },
     async handlerLoadingNext() {
-      this.loading = true
-      const timestamp = (
-        ' ' + this.itemsNext[this.itemsNext.length - 1].timestamp
-      ).slice(1)
+      this.loadingNext = true
+      let timestamp = (' ' + this.timestamp).slice(1)
+      if (this.itemsNext.length > 0)
+        timestamp = (
+          ' ' + this.itemsNext[this.itemsNext.length - 1].timestamp
+        ).slice(1)
       const nextStart = (parseInt(timestamp) + 100000).toString()
       const nextEnd =
         Date.parse(
@@ -260,15 +233,14 @@ export default {
             ),
           ),
         ) + '000000'
-      await this.listContext(
-        Object.assign(this.loki.stream, {
-          direction: 'next',
-          start: nextStart,
-          end: nextEnd,
-          append: true,
-        }),
-      )
-      this.loading = false
+      await this.listContext({
+        logql: this.logQL,
+        direction: 'next',
+        start: nextStart,
+        end: nextEnd,
+        append: true,
+      })
+      this.loadingNext = false
     },
   },
   mounted() {

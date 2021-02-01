@@ -49,38 +49,72 @@ helm repo add loki https://grafana.github.io/loki/charts
 - 进入源码目录，编辑 `docker-compose.yaml` 文件
 
 ```yaml
-version: "3.8"
+version: '3.8'
 services:
   ui:
+    build:
+      context: ..
+      dockerfile: ./build-image/Dockerfile.ui
+      target: ui
     image: quay.io/cloudminds/dagger-ui:latest
     hostname: dagger-ui
     container_name: dagger-ui
-    depends_on:
-      - backend
     ports:
-      - "8080:8080"
+      - '8080:8080'
     networks:
       - dagger
+    restart: on-failure
   backend:
+    build:
+      context: ..
+      dockerfile: ./build-image/Dockerfile.backend
+      target: backend
     image: quay.io/cloudminds/dagger-backend:latest
     hostname: dagger-backend
     container_name: dagger-backend
-    environment:
-      - LOKI_SERVER=http://127.0.0.1:3100 # your loki server address (optional)
+    depends_on:
+      - mysql
+      - alertmanager
     ports:
-      - "8000:8000"
-    command: ["sh", "-c", "./dagger"]
+      - '8000:8000'
+    command: ['sh', '-c', './dagger']
     networks:
       - dagger
     volumes:
-      - "./config/dagger.ini:/etc/dagger/dagger.ini"
-      - "static_data:/usr/src/app/static:rw"
-      - "sqlite_data:/usr/src/app/db:rw"
+      - '../backend/dagger.ini:/etc/dagger/dagger.ini'
+      - 'static_data:/usr/src/app/static:rw'
+      - 'alertmanager_conf:/usr/src/app/conf:rw'
+    restart: on-failure
+  alertmanager:
+    image: prom/alertmanager:latest
+    hostname: dagger-alertmanager
+    container_name: dagger-alertmanager
+    ports:
+      - '9093:9093'
+    networks:
+      - dagger
+    volumes:
+      - 'alertmanager_conf:/etc/alertmanager:rw'
+  mysql:
+    image: mysql:latest
+    hostname: dagger-mysql
+    container_name: dagger-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: log
+    ports:
+      - '3306:3306'
+    networks:
+      - dagger
+    volumes:
+      - './config:/docker-entrypoint-initdb.d:rw'
 
 volumes:
   sqlite_data:
     driver: local
   static_data:
+    driver: local
+  alertmanager_conf:
     driver: local
 
 networks:
@@ -91,20 +125,44 @@ networks:
 - 编辑 `dagger.ini` 文件
 
 ```
+[global]
+debug = true
+; 邮件接收者，仅当未开启用户注册时生效
+to =
+; 是否需要告警模块
+alert_enabled = true
+
 [users]
-allow_sign_up = false #是否开启注册
-admin_username = admin #默认管理员
-admin_passwod = admin #默认管理员密码
+; 允许注册
+allow_sign_up = true
+admin_username = admin
+admin_passwod = admin
+
+[db]
+address = root:123456@tcp(dagger-mysql:3306)/log?charset=utf8&parseTime=True&loc=Local
+
+[loki]
+address = http://172.16.31.102:3100
 
 [ldap]
-enabled = true
-ldap_host = 172.16.23.2
+enabled = false
+ldap_host = 172.1.1.1
 ldap_port = 389
 ldap_base_dn =
 ldap_bind_username =
 ldap_bind_password =
 ldap_username_key = uid
 ldap_mail_key = mail
+
+[alertmanager]
+; 同alertmanager.yml配置
+enabled = true
+address = http://dagger-alertmanager:9093
+smtp_from =
+smtp_smarthost =
+smtp_smartport = 25
+smtp_auth_username =
+smtp_auth_password =
 ```
 
 - 启动服务
@@ -120,7 +178,7 @@ $ docker-compose up -d
 - 编译后端
 
 ```
-CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dagger backend/main.go
+CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dagger backend/main.go 或者直接使用二进制文件启动 ./dagger
 ```
 
 - 复制 `dagger` 至 `/usr/local/bin/` 目录下，可采用 `nohup` 或 `systemd` 方式启动后端
@@ -128,7 +186,7 @@ CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o dagger backend/main.go
 - 编译前端
 
 ```
-npm install && npm run  build
+yarn install && yarn build
 ```
 
 - 将生成的 `dist` 文件下复制到本地路径下， 例如 `/usr/src/`

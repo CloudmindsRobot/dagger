@@ -16,6 +16,7 @@ import 'echarts/lib/component/title'
 import 'echarts/lib/component/legend'
 import 'echarts/lib/component/legendScroll'
 import ECharts from 'vue-echarts'
+import VuetifyConfirm from 'vuetify-confirm'
 
 Vue.component('v-chart', ECharts)
 
@@ -26,12 +27,18 @@ Vue.use(Vuetify)
 
 Vue.config.productionTip = false
 
+const vuetify = new Vuetify({
+  icons: {
+    iconfont: 'md',
+  },
+})
+
+Vue.use(VuetifyConfirm, {
+  vuetify,
+})
+
 new Vue({
-  vuetify: new Vuetify({
-    icons: {
-      iconfont: 'md',
-    },
-  }),
+  vuetify: vuetify,
   router,
   store,
   render: (h) => h(App),

@@ -11,9 +11,31 @@
           <v-card>
             <v-card-title style="padding: 10px 20px 0 !important;">
               <loki-filter
+                v-if="advanced === false"
+                style="width: auto;"
                 ref="lokiFilter"
-                :dateRangeTimestamp.sync="dateRangeTimestamp"
+                @updateLogQL="handlerUpdateLogQL"
+                :pod.sync="pod"
               ></loki-filter>
+              <loki-filter-advance
+                v-else
+                style="width: auto;"
+                ref="lokiFilterAdvance"
+                @updateQueryed="handlerQueryed"
+                @updateAdvanceFilter="handleAdvanceFilter"
+                :queryed.sync="queryed"
+                :resultType.sync="resultType"
+              ></loki-filter-advance>
+
+              <v-btn
+                icon
+                color="primary"
+                @click="handlerChangeAdvance"
+                :loading="filterChangeLoading"
+              >
+                <v-icon>loop</v-icon>
+              </v-btn>
+
               <span class="pr-4">
                 <loki-datetime-range-picker
                   ref="dateRangePicker"
@@ -28,7 +50,7 @@
                   查询
                 </v-btn>
               </span>
-              <span class="pr-4">
+              <span class="pr-4" v-if="advanced === false">
                 <v-btn
                   color="primary"
                   :loading="saveResultLoading"
@@ -38,15 +60,26 @@
                 </v-btn>
               </span>
             </v-card-title>
+            <v-subheader v-if="advanced === false" class="logql-font">
+              LogQL: {{ logQL }}
+            </v-subheader>
             <loki-histogram
+              v-if="resultType === 'streams'"
               ref="lokiHistogram"
               :middleStart.sync="dateRangeTimestamp[0]"
               :middleEnd.sync="dateRangeTimestamp[1]"
               @refresh="listQueryRanges"
             ></loki-histogram>
+            <loki-line
+              v-else-if="resultType === 'matrix'"
+              ref="lokiLine"
+              :middleStart.sync="dateRangeTimestamp[0]"
+              :middleEnd.sync="dateRangeTimestamp[1]"
+            ></loki-line>
             <v-flex xs12 md12>
               <v-card id="log-card">
                 <v-card-title
+                  v-if="resultType === 'streams'"
                   style="font-size: 13px;font-weight: normal;padding:0 16px !important;height: 60px !important;"
                 >
                   限制:
@@ -90,6 +123,7 @@
                   </span>
                 </v-card-title>
                 <v-card-title
+                  v-if="resultType === 'streams'"
                   style="padding:0px 16px 15px;font-size: 13px;font-weight: normal;"
                 >
                   <span
@@ -108,7 +142,7 @@
                     >
                   </span>
                 </v-card-title>
-                <v-card-text>
+                <v-card-text v-if="resultType === 'streams'">
                   <v-data-table
                     :headers="headers"
                     :items="items"
@@ -148,10 +182,13 @@
                       ></div>
                       <loki-context
                         v-if="
-                          filtered || (level.length > 0 && level.length < 5)
+                          filtered ||
+                            (level.length > 0 && level.length < 5) ||
+                            advancedFilterd
                         "
                         :loki.sync="item"
                         :timestamp.sync="item.info.timestamp"
+                        :logQL.sync="logQL"
                         style="line-height: 18px;"
                       ></loki-context>
                     </template>
@@ -172,6 +209,7 @@
       </v-layout>
     </v-container>
     <v-btn
+      v-if="!advanced"
       fab
       color="success"
       class="v-btn v-btn--bottom v-btn--contained v-btn--fab v-btn--fixed v-btn--right v-btn--round theme--dark v-size--middle"
@@ -197,6 +235,7 @@
         <v-icon>expand_less</v-icon>
       </v-btn>
       <v-btn
+        v-if="resultType === 'streams'"
         fab
         small
         color="success"
@@ -242,26 +281,36 @@
 #logviewer .v-btn--floating {
   position: relative;
 }
+.logql-font {
+  height: auto;
+  padding: 0 20px !important;
+}
 </style>
 
 <script>
 import { listQueryRanges, exportQueryRanges, listLabels } from '@/api'
 import { mapState } from 'vuex'
 import LokiHistogram from './components/LokiHistogram'
+import LokiLine from './components/LokiLine'
 import LokiDatetimeRangePicker from './components/LokiDateTimeRangePicker'
 import LokiContext from './components/LokiContext'
 import LokiFilter from './components/LokiFilter'
+import LokiFilterAdvance from './components/LokiFilterAdvance'
 import LokiSaveSnapshot from './components/LokiSaveSnapshot'
 import { formatDatetime, parserDatetime } from '@/utils/helpers'
+import LogQL from '@/mixins/log/logql'
 
 export default {
   name: 'LokiViewer',
+  mixins: [LogQL],
   components: {
     LokiHistogram,
     LokiDatetimeRangePicker,
     LokiContext,
     LokiFilter,
     LokiSaveSnapshot,
+    LokiFilterAdvance,
+    LokiLine,
   },
   data: () => ({
     breadcrumbs: [
@@ -281,6 +330,7 @@ export default {
     downloading: false,
     level: [],
     filtered: false,
+    advancedFilterd: false,
     dateRangeTimestamp: [],
     limit: 2000,
     size: 20,
@@ -331,6 +381,11 @@ export default {
     timestamp: false,
     dsc: true,
     filters: [],
+    logQL: '',
+    advanced: false,
+    filterChangeLoading: false,
+    resultType: 'streams',
+    queryed: false,
     labels: [],
   }),
   computed: {
@@ -346,19 +401,13 @@ export default {
         return
       }
       this.loading = true
+      if (/\[\d+m\]/.test(this.logQL)) {
+        this.resultType = 'matrix'
+      } else {
+        this.resultType = 'streams'
+      }
       try {
-        const filterData = {}
-        this.filters = []
-        this.$refs.lokiFilter.model.forEach((item) => {
-          if (item.value === 'filter') {
-            this.filters.push(item.text.substr(item.text.indexOf(':') + 1))
-          } else {
-            filterData[item.value] = item.text.substr(
-              item.text.indexOf(':') + 1,
-            )
-          }
-        })
-        const data = Object.assign(filterData, {
+        const data = {
           start: this.dateRangeTimestamp[0],
           end: this.dateRangeTimestamp[1],
           level: this.level.join(','),
@@ -369,26 +418,15 @@ export default {
           pod: this.pod,
           dsc: this.dsc,
           filters: this.filters,
-        })
+          logql: encodeURIComponent(this.logQL),
+        }
         this.filtered =
           data.hasOwnProperty('filters') && data.filters.length > 0
         this.items = []
         const res = await listQueryRanges(data)
         if (res.status === 200) {
-          if (res.data === null) {
-            this.$refs.lokiHistogram.chartData = {
-              'xAxis-data': [],
-              'yAxis-data': {
-                info: [],
-                debug: [],
-                error: [],
-                warn: [],
-                unknown: [],
-              },
-            }
-            this.loading = false
-            return
-          }
+          this.queryed = true
+          this.resultType = res.data.resultType
           this.items =
             res.data.query === null
               ? []
@@ -402,6 +440,12 @@ export default {
               color: 'warning',
             })
           }
+          if (res.data.chart.hasOwnProperty('long') && res.data.chart['long']) {
+            this.$store.commit('showSnackBar', {
+              text: 'Warn: 数据过多，仅展示50条',
+              color: 'warning',
+            })
+          }
           const xAxisData = []
           res.data.chart['xAxis-data'].forEach((item) => {
             xAxisData.push(
@@ -409,7 +453,11 @@ export default {
             )
           })
           res.data.chart['xAxis-data'] = xAxisData
-          this.$refs.lokiHistogram.chartData = res.data.chart
+          if (this.resultType === 'streams') {
+            this.$refs.lokiHistogram.chartData = res.data.chart
+          } else {
+            this.$refs.lokiLine.chartData = res.data.chart
+          }
           if (res.data.pod !== undefined) {
             this.pods = res.data.pod
           }
@@ -420,47 +468,43 @@ export default {
           }
         } else {
           this.$store.commit('showSnackBar', {
-            text: `Error: ${res.data.message}`,
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {
-        this.$store.commit('showSnackBar', {
-          text: 'Error: 获取数据失败',
-          color: 'error',
-        })
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
+          this.$store.commit('showSnackBar', {
+            text: 'Error: 获取数据失败',
+            color: 'error',
+          })
+        }
+        this.queryed = false
       }
       this.loading = false
     },
     async handlerDownloading(saving) {
-      if (this.$refs.lokiFilter.model.length === 0) {
+      if (this.logQL.length === 0 || this.logQL === '{}') {
         this.$store.commit('showSnackBar', {
-          text: 'Warn: 请进行条件过滤',
+          text: 'Warn: 请输入查询条件',
           color: 'warning',
         })
         return
       }
       this.downloading = true
       try {
-        const filterData = {}
-        this.filters = []
-        this.$refs.lokiFilter.model.forEach((item) => {
-          if (item.value === 'filter') {
-            this.filters.push(item.text.substr(item.text.indexOf(':') + 1))
-          } else {
-            filterData[item.value] = item.text.substr(
-              item.text.indexOf(':') + 1,
-            )
-          }
-        })
-        const data = Object.assign(filterData, {
+        const data = {
           start: this.dateRangeTimestamp[0],
           end: this.dateRangeTimestamp[1],
           level: this.level.join(','),
           pod: this.pod,
           dsc: this.dsc,
           filters: this.filters,
-        })
+          logql: encodeURIComponent(this.logQL),
+        }
         const res = await exportQueryRanges(data)
         if (res.status === 200) {
           if (res.data === null) {
@@ -495,15 +539,20 @@ export default {
           }
         } else {
           this.$store.commit('showSnackBar', {
-            text: `Error: ${res.data.message}`,
-            color: 'error',
+            text: `Warn: ${res.data.message}`,
+            color: 'warning',
           })
         }
       } catch (err) {
-        this.$store.commit('showSnackBar', {
-          text: 'Error: 获取数据失败',
-          color: 'error',
-        })
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
+          this.$store.commit('showSnackBar', {
+            text: 'Error: 获取数据失败',
+            color: 'error',
+          })
+        }
       }
       this.downloading = false
     },
@@ -581,7 +630,7 @@ export default {
       }
       this.saveResultLoading = false
     },
-    handlerQuerying() {
+    async handlerQuerying() {
       if (this.loading) return
       if (this.$refs.dateRangePicker.quick) {
         this.$refs.dateRangePicker.handlerChangeQuickTime()
@@ -589,21 +638,30 @@ export default {
       this.middleStart = ''
       this.middleEnd = ''
       this.size = 20
-      this.$refs.lokiHistogram.start = 0
-      this.$refs.lokiHistogram.end = 100
-      this.$refs.lokiHistogram.legendSelected = {
-        Info: true,
-        Debug: true,
-        Warn: true,
-        Error: true,
-        Unknown: true,
-      }
+      if (this.resultType === 'streams') this.$refs.lokiHistogram.handerReset()
       this.level = []
       this.pod = ''
       this.pods = []
       this.legends.forEach((item) => {
         item.selected = false
       })
+      if (!this.advanced) {
+        const logqlObj = await this.handlerLogQL(
+          this.$refs.lokiFilter.model,
+          this.pod,
+        )
+        if (logqlObj !== null)
+          this.handlerUpdateLogQL(logqlObj.logql, logqlObj.filters)
+      } else {
+        this.logQL = this.$refs.lokiFilterAdvance.logQL
+      }
+      if (this.logQL === '' || this.logQL === '{}') {
+        this.$store.commit('showSnackBar', {
+          text: 'Warn: 请输入查询条件',
+          color: 'warning',
+        })
+        return
+      }
       this.listQueryRanges()
     },
     handlerGotoOptions() {
@@ -616,7 +674,7 @@ export default {
     handlerGoTo() {
       this.$vuetify.goTo(0, this.handlerGotoOptions())
     },
-    handlerToggleSelectPod(item) {
+    async handlerToggleSelectPod(item) {
       if (this.loading) return
       const index = this.pods.findIndex((i) => i.text === item.text)
       this.$set(this.pods, index, { text: item.text, selected: !item.selected })
@@ -627,24 +685,25 @@ export default {
         }
       })
       this.pod = filterPod.join('|')
+      if (!this.advanced) {
+        const logqlObj = await this.handlerLogQL(
+          this.$refs.lokiFilter.model,
+          this.pod,
+        )
+        if (logqlObj !== null)
+          this.handlerUpdateLogQL(logqlObj.logql, logqlObj.filters)
+      } else {
+        this.logQL = this.$refs.lokiFilterAdvance.logQL
+      }
       this.listQueryRanges()
     },
     handlerParams() {
-      const params = {}
-      this.filters = []
-      this.$refs.lokiFilter.model.forEach((item) => {
-        if (item.value === 'filter') {
-          this.filters.push(item.text.substr(item.text.indexOf(':') + 1))
-        } else {
-          params[item.value] = item.text.substr(item.text.indexOf(':') + 1)
-        }
-      })
-      const data = Object.assign(params, {
+      const data = {
         start: Date.parse(new Date()).toString() + '000000',
         level: this.level.join(','),
-        pod: this.pod,
         filters: this.filters,
-      })
+        logql: encodeURIComponent(this.logQL),
+      }
       const paramArray = []
       for (var item in data) {
         paramArray.push(item + '=' + data[item])
@@ -726,11 +785,42 @@ export default {
           this.labels = res.data
         }
       } catch (err) {
-        this.$store.commit('showSnackBar', {
-          text: 'Error: 获取数据失败',
-          color: 'error',
-        })
+        if (
+          err.response &&
+          [400, 401, 403, 504].indexOf(err.response.status) === -1
+        ) {
+          this.$store.commit('showSnackBar', {
+            text: 'Error: 获取数据失败',
+            color: 'error',
+          })
+        }
       }
+    },
+    handlerChangeAdvance() {
+      this.filterChangeLoading = true
+      const vue = this
+      setTimeout(() => {
+        vue.advanced = !vue.advanced
+        vue.filterChangeLoading = false
+        if (!vue.advanced) {
+          vue.logQL = ''
+          vue.advancedFilterd = false
+        } else {
+          vue.$nextTick(() => {
+            vue.$refs.lokiFilterAdvance.logQL = vue.logQL
+          })
+        }
+      }, 300)
+    },
+    handlerQueryed(queryed) {
+      this.queryed = queryed
+    },
+    handlerUpdateLogQL(logql, filters) {
+      this.logQL = logql
+      this.filters = filters
+    },
+    handleAdvanceFilter(filterd) {
+      this.advancedFilterd = filterd
     },
   },
   created() {
@@ -749,6 +839,8 @@ export default {
       const pod = this.$route.query['pod']
       const start = this.$route.query['start']
       const end = this.$route.query['end']
+      const advanced = this.$route.query['advanced']
+      const logQL = this.$route.query['logQL']
       let filters = this.$route.query['filters']
       for (var key in this.$route.query) {
         if (this.labels.indexOf(key) > -1) {
@@ -760,7 +852,7 @@ export default {
       }
       if (filters !== undefined) {
         if (typeof filters === 'string') {
-          filters = [filters]
+          filters = filters.split(',')
         }
         filters.forEach((item) => {
           this.$refs.lokiFilter.model.push({
@@ -769,7 +861,10 @@ export default {
           })
         })
       }
-      if (this.$refs.lokiFilter.model.length > 0) {
+      if (advanced !== undefined) {
+        this.advanced = advanced
+      }
+      if (this.$refs.lokiFilter.model.length > 0 || this.advanced) {
         if (start !== undefined && end !== undefined) {
           const timeReg = /^[0-9][0-9][0-9][0-9]-[0-1][0-9]-[0-3][0-9] [0-2][0-9]:[0-5][0-9]:[0-5][0-9]$/g
           if (timeReg.test(start) && timeReg.test(end)) {
@@ -790,6 +885,21 @@ export default {
         if (pod !== undefined) {
           this.pod = pod
           this.pods = [{ text: pod, selected: true }]
+        }
+        if (logQL === undefined) {
+          const logqlObj = await this.handlerLogQL(
+            this.$refs.lokiFilter.model,
+            this.pod,
+          )
+          if (logqlObj !== null)
+            this.handlerUpdateLogQL(logqlObj.logql, logqlObj.filters)
+        } else {
+          this.logQL = decodeURIComponent(logQL)
+          if (this.advanced) {
+            this.$nextTick(() => {
+              this.$refs.lokiFilterAdvance.logQL = this.logQL
+            })
+          }
         }
         this.listQueryRanges()
       }

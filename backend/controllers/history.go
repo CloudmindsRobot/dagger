@@ -3,15 +3,10 @@ package controllers
 import (
 	"dagger/backend/databases"
 	"dagger/backend/models"
-	"dagger/backend/utils"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 //
@@ -24,27 +19,18 @@ import (
 // @Success 200 {string} string	"[]"
 // @Router /api/v1/loki/history/create [post]
 func LokiHistoryCreate(c *gin.Context) {
-	postDataByte, _ := ioutil.ReadAll(c.Request.Body)
-	var postData map[string]interface{}
-	err := json.Unmarshal(postDataByte, &postData)
-	if err != nil {
-		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "请查看服务器日志"})
+	var history models.LogHistory
+	if err := c.ShouldBindJSON(&history); err != nil {
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
 		return
 	}
-
-	labelJSON := postData["label_json"].(string)
-	filterJSON := postData["filter_json"].(string)
 
 	userI, _ := c.Get("user")
 	user := userI.(models.User)
 
-	history := models.LogHistory{
-		LabelJSON:  labelJSON,
-		FilterJSON: filterJSON,
-		CreateAt:   time.Now(),
-		UserID:     user.ID,
-	}
+	history.CreateAt = time.Now().UTC()
+	history.User = user
+
 	databases.DB.Save(&history)
 
 	c.JSON(201, nil)

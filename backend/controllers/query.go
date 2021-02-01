@@ -3,6 +3,7 @@ package controllers
 import (
 	"dagger/backend/models"
 	"dagger/backend/utils"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -32,50 +33,24 @@ var upGrader = websocket.Upgrader{
 // @Produce  json
 // @Param   start path string true "The start time for the query as a nanosecond Unix epoch"
 // @Param   end path string true "The end time for the query as a nanosecond Unix epoch"
-// @Param   all path string false "The new query to all results"
 // @Param   dsc path string true "The order to all results"
 // @Param   filter path string false "The filter condition"
 // @Param   level path string false "The log level"
 // @Param   limit path string false "The max number of entries to return"
+// @Param   logql path string true "loki query language"
 // @Success 200 {string} string	"[]"
 // @Router /api/v1/loki/list/ [get]
 func LokiList(c *gin.Context) {
 	filters := c.QueryArray("filters[]")
+	queryExpr := c.DefaultQuery("logql", "")
 	level := c.DefaultQuery("level", "")
-	pod := c.DefaultQuery("pod", "")
 	dsc, _ := strconv.ParseBool(c.DefaultQuery("dsc", "true"))
 	start := c.DefaultQuery("start", "")
 	end := c.DefaultQuery("end", "")
+	pod := c.DefaultQuery("pod", "")
 
-	queryExprArray := []string{}
-	labels := utils.Labels(start, end)
-	for _, label := range labels {
-		if c.DefaultQuery(label.(string), "") != "" {
-			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
-		}
-	}
+	queryExpr, _ = url.QueryUnescape(queryExpr)
 
-	if pod != "" {
-		queryExprArray = append(queryExprArray, utils.GetPodExpr(pod))
-	}
-
-	if len(queryExprArray) == 0 {
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "缺少查询条件"})
-		return
-	}
-
-	queryExpr := fmt.Sprintf("{%s}", strings.Join(queryExprArray, ","))
-	for _, filter := range filters {
-		_, err := regexp.Compile(filter)
-		if err != nil {
-			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("regex compile error, %s", err))
-			c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
-			return
-		}
-		filter := strings.ReplaceAll(filter, "\\", "\\\\")
-		filter = strings.ReplaceAll(filter, "\"", "\\\"")
-		queryExpr = fmt.Sprintf("%s |~ \"%s\"", queryExpr, strings.Trim(filter, ""))
-	}
 	if level != "" {
 		levelExpr := utils.GenerateLevelRegex(level)
 		if levelExpr != "" {
@@ -104,32 +79,74 @@ func LokiList(c *gin.Context) {
 	}
 
 	utils.Log4Zap(zap.InfoLevel).Info(fmt.Sprintf("query expr: %s", queryExpr))
+
+	queryExpr = url.QueryEscape(queryExpr)
+	result, err := utils.QueryRange(queryExpr, limit, middleStart, middleEnd, direction)
+	if err != nil {
+		c.AbortWithStatusJSON(400, gin.H{"success": true, "message": err.Error()})
+		return
+	}
+
+	cstZone := time.FixedZone("GMT", 8*3600)
 	var queryResults []interface{}
 	chartResult := make(map[string]interface{})
 	podResults := []interface{}{}
 	podSetStr := ""
-
-	queryExpr = url.QueryEscape(queryExpr)
-	result := utils.QueryRange(queryExpr, limit, middleStart, middleEnd, direction)
-
 	resultType := result["resultType"]
-	if resultType != nil && resultType.(string) == "matrix" {
-		// 暂不支持matrix
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "暂不支持matrix类型查询"})
-		return
-	}
-
 	results := result["result"]
-	if results != nil {
+	if resultType.(string) == "matrix" {
+		splitDateTimeArray, vals, interval := utils.SplitDateTimeForMatrix(start, end)
+		chartResult["xAxis-data"] = splitDateTimeArray
+		chartResult["yAxis-data"] = make(map[string][]string)
+		chartResult["table-data"] = []string{}
 
+		if len(results.([]interface{})) > 50 {
+			results = results.([]interface{})[0:50]
+			chartResult["long"] = true
+		}
+
+		for index, result := range results.([]interface{}) {
+			resultEle := result.(map[string]interface{})
+			// 获取表格数据
+			vs := make([]string, len(vals), len(vals))
+			vsInterval := []string{}
+			copy(vs, vals)
+			d, _ := json.Marshal(resultEle["metric"])
+			chartResult["table-data"] = append(chartResult["table-data"].([]string), string(d))
+			values := resultEle["values"].([]interface{})
+			step := 0
+			if len(values) >= 2 {
+				v0 := values[0].([]interface{})
+				v1 := values[1].([]interface{})
+				step = int(v1[0].(float64)) - int(v0[0].(float64))
+			}
+			for _, v := range values {
+				vEle := v.([]interface{})
+				startIndex, _ := strconv.ParseInt(start[0:10], 10, 64)
+				vs[int(vEle[0].(float64))-int(startIndex)] = vEle[1].(string)
+				index := 0
+				for {
+					index++
+					if index < step {
+						vs[int(vEle[0].(float64))-int(startIndex)+index] = vEle[1].(string)
+					} else {
+						break
+					}
+				}
+			}
+			for index, v := range vs {
+				if index%interval == 0 {
+					vsInterval = append(vsInterval, v)
+				}
+			}
+			chartResult["yAxis-data"].(map[string][]string)[fmt.Sprintf("%d", index)] = vsInterval
+		}
+	} else {
 		size := 20
 		splitDateTimeArray, step := utils.SplitDateTime(start, end, size)
 		chartResult["xAxis-data"] = splitDateTimeArray
 		chartResult["yAxis-data"] = utils.InitSplitDateTime(size)
 
-		for _, filter := range filters {
-			filter = strings.ReplaceAll(filter, "\\\\", "\\")
-		}
 		for _, result := range results.([]interface{}) {
 			resultEle := result.(map[string]interface{})
 			stream := resultEle["stream"].(map[string]interface{})
@@ -156,14 +173,11 @@ func LokiList(c *gin.Context) {
 				item["stream"] = stream
 				v := value.([]interface{})
 				message := v[1].(string)
-				// 保留换行符
-				// if len(strings.Trim(message, "\n")) == 0 {
-				// 	continue
-				// }
+
 				item["info"] = make(map[string]interface{})
 				item["info"].(map[string]interface{})["timestamp"] = v[0].(string)
 				timestamp, _ := strconv.ParseInt(v[0].(string)[0:13], 10, 64)
-				item["info"].(map[string]interface{})["timestampstr"] = time.Unix(0, timestamp*int64(time.Millisecond)).Format("2006-01-02 15:04:05.000")
+				item["info"].(map[string]interface{})["timestampstr"] = time.Unix(0, timestamp*int64(time.Millisecond)).In(cstZone).Format("2006-01-02 15:04:05.000")
 				item["info"].(map[string]interface{})["message"] = v[1].(string)
 				item["info"].(map[string]interface{})["message"] = utils.ShellHighlightShow(item["info"].(map[string]interface{})["message"].(string))
 				for _, filter := range filters {
@@ -184,16 +198,15 @@ func LokiList(c *gin.Context) {
 				queryResults = append(queryResults, item)
 			}
 		}
-
-	} else {
-		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
-		return
 	}
 
 	data := make(map[string]interface{})
 	data["query"] = queryResults
 	data["chart"] = chartResult
-	data["pod"] = podResults
+	if pod == "" {
+		data["pod"] = podResults
+	}
+	data["resultType"] = resultType
 
 	c.JSON(200, data)
 }
@@ -250,42 +263,18 @@ func LokiLabelValues(c *gin.Context) {
 // @Produce  json
 // @Param   start path string true "The start time for the query as a nanosecond Unix epoch"
 // @Param   end path string true "The end time for the query as a nanosecond Unix epoch"
-// @Param   filter path string false "The filter condition"
-// @Param   level path string false "The log level"
-// @Param   dsc path string true "The order to all results"
+// @Param   logql path string true "loki query language"
 // @Success 200 {string} string	"[]"
 // @Router /api/v1/loki/export/ [get]
 func LokiExport(c *gin.Context) {
-	filters := c.QueryArray("filters[]")
 	level := c.DefaultQuery("level", "")
-	pod := c.DefaultQuery("pod", "")
+	queryExpr := c.DefaultQuery("logql", "")
 	dsc, _ := strconv.ParseBool(c.DefaultQuery("dsc", "true"))
 
 	start := c.DefaultQuery("start", "")
 	end := c.DefaultQuery("end", "")
 
-	queryExprArray := []string{}
-	labels := utils.Labels(start, end)
-	for _, label := range labels {
-		if c.DefaultQuery(label.(string), "") != "" {
-			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
-		}
-	}
-
-	if pod != "" {
-		queryExprArray = append(queryExprArray, utils.GetPodExpr(pod))
-	}
-
-	if len(queryExprArray) == 0 {
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "缺少查询条件"})
-		return
-	}
-
-	queryExpr := fmt.Sprintf("{%s}", strings.Join(queryExprArray, ","))
-
-	for _, filter := range filters {
-		queryExpr = fmt.Sprintf("%s |~ \"%s\"", queryExpr, strings.Trim(filter, ""))
-	}
+	queryExpr, _ = url.QueryUnescape(queryExpr)
 	if level != "" {
 		levelExpr := utils.GenerateLevelRegex(level)
 		if levelExpr != "" {
@@ -306,16 +295,16 @@ func LokiExport(c *gin.Context) {
 	cmd := fmt.Sprintf("mkdir -p %s", exportDir)
 	_, err := exec.Command("bash", "-c", cmd).CombinedOutput()
 	if err != nil {
-		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mkdir error, %s", err))
-		c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "创建文件下载目录失败"})
+		utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("mkdir error, %s", err))
+		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "创建文件下载目录失败"})
 		return
 	}
 
-	filename := fmt.Sprintf("%s.log", time.Now().Format("20060102150405"))
+	filename := fmt.Sprintf("%s.log", time.Now().UTC().Format("20060102150405"))
 	absolutePath := fmt.Sprintf("%s/static/export/%s", dir, filename)
 	file, err := os.Create(absolutePath)
 	if err != nil {
-		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("open loki csv file error, %s", err))
+		utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("open loki csv file error, %s", err))
 	}
 	defer file.Close()
 
@@ -336,7 +325,13 @@ func LokiExport(c *gin.Context) {
 			break
 		}
 
-		result := utils.QueryRange(queryExpr, limit, start, end, direction)
+		result, err := utils.QueryRange(queryExpr, limit, start, end, direction)
+		if err != nil {
+			utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("download expr error: %s", err))
+			index--
+			continue
+		}
+
 		resultType := result["resultType"]
 		if resultType != nil && resultType.(string) == "matrix" {
 			// 暂不支持matrix
@@ -352,10 +347,7 @@ func LokiExport(c *gin.Context) {
 				values := resultEle["values"].([]interface{})
 				for _, value := range values {
 					v := value.([]interface{})
-					// 保留换行符
-					// if len(strings.Trim(v[1].(string), "\n")) == 0 {
-					// 	continue
-					// }
+
 					messages = append(messages, models.LokiMessage{Timestamp: v[0].(string), Message: v[1].(string)})
 				}
 			}
@@ -389,26 +381,13 @@ func LokiExport(c *gin.Context) {
 // @Produce  json
 // @Param   start path string true "The start time for the query as a nanosecond Unix epoch"
 // @Param   end path string true "The end time for the query as a nanosecond Unix epoch"
+// @Param   logql path string true "loki query language"
 // @Success 200 {string} string	"[]"
 // @Router /api/v1/loki/context/ [get]
 func LokiContext(c *gin.Context) {
-	queryExprArray := []string{}
-
 	start := c.DefaultQuery("start", "")
 	end := c.DefaultQuery("end", "")
-	labels := utils.Labels(start, end)
-	for _, label := range labels {
-		if c.DefaultQuery(label.(string), "") != "" {
-			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
-		}
-	}
-
-	if len(queryExprArray) == 0 {
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "缺少查询条件"})
-		return
-	}
-
-	queryExpr := fmt.Sprintf("{%s}", strings.Join(queryExprArray, ","))
+	queryExpr := c.DefaultQuery("logql", "")
 
 	limit, _ := strconv.Atoi(c.DefaultQuery("limit", "10"))
 	direction := c.DefaultQuery("direction", "")
@@ -420,7 +399,12 @@ func LokiContext(c *gin.Context) {
 
 	utils.Log4Zap(zap.InfoLevel).Info(fmt.Sprintf("context expr: %s", queryExpr))
 	queryExpr = url.QueryEscape(queryExpr)
-	result := utils.QueryRange(queryExpr, limit, start, end, direction)
+	result, err := utils.QueryRange(queryExpr, limit, start, end, direction)
+	if err != nil {
+		c.AbortWithStatusJSON(400, gin.H{"success": true, "message": err.Error()})
+		return
+	}
+
 	queryResults := []interface{}{}
 
 	resultType := result["resultType"]
@@ -466,50 +450,17 @@ func LokiContext(c *gin.Context) {
 // @Param   start path string true "The end time for the query as a nanosecond Unix epoch"
 // @Param   pod path string false "The pod filter condition to perform"
 // @Param   filter path string false "The filter condition"
-// @Param   level path string false "The log level"
-// @Param   limit path string false "The max number of entries to return"
+// @Param   logql path string true "loki query language"
 // @Success 200 {string} string	"[]"
 // @Router /ws/tail/ [get]
 func LokiTail(c *gin.Context) {
 	level := c.DefaultQuery("level", "")
-	pod := c.DefaultQuery("pod", "")
-
-	filtersStr := c.DefaultQuery("filters", "")
-	filters := strings.Split(filtersStr, ",")
+	queryExpr := c.DefaultQuery("logql", "")
+	filterStr := c.DefaultQuery("filters", "")
+	filters := strings.Split(filterStr, ",")
 	start := c.DefaultQuery("start", "")
 
-	queryExprArray := []string{}
-
-	t := time.Now().Unix()
-	end := fmt.Sprintf("%d000000000", t)
-	labels := utils.Labels(start, end)
-	for _, label := range labels {
-		if c.DefaultQuery(label.(string), "") != "" {
-			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
-		}
-	}
-
-	if pod != "" {
-		queryExprArray = append(queryExprArray, utils.GetPodExpr(pod))
-	}
-
-	if len(queryExprArray) == 0 {
-		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "缺少查询条件"})
-		return
-	}
-
-	queryExpr := fmt.Sprintf("{%s}", strings.Join(queryExprArray, ","))
-	for _, filter := range filters {
-		_, err := regexp.Compile(filter)
-		if err != nil {
-			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("regex compile error, %s", err))
-			c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
-			return
-		}
-		filter := strings.ReplaceAll(filter, "\\", "\\\\")
-		filter = strings.ReplaceAll(filter, "\"", "\\\"")
-		queryExpr = fmt.Sprintf("%s |~ \"%s\"", queryExpr, strings.Trim(filter, ""))
-	}
+	queryExpr, _ = url.QueryUnescape(queryExpr)
 	if level != "" {
 		levelExpr := utils.GenerateLevelRegex(level)
 		if levelExpr != "" {
@@ -553,7 +504,7 @@ func LokiTail(c *gin.Context) {
 			data := utils.LokiWebsocketMessageConstruct(wsClientMessage.Data, filters)
 			err := serverConnect.WriteMessage(wsClientMessage.MessageType, data)
 			if err != nil {
-				utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("send message to viewer error, %s", err))
+				utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("send message to viewer error, %s", err))
 				return
 			}
 		case wsServerMessage, ok := <-chanReceiveMessage:
@@ -566,4 +517,48 @@ func LokiTail(c *gin.Context) {
 			}
 		}
 	}
+}
+
+//
+// @Summary Construct loki query language
+// @Description Construct loki query language
+// @Accept  json
+// @Produce  json
+// @Param   pod path string false "The pod filter condition to perform"
+// @Param   filters path string false "The filter condition"
+// @Success 200 {string} string	"[]"
+// @Router /api/v1/loki/logql/ [get]
+func TransformLogQL(c *gin.Context) {
+	filters := c.QueryArray("filters[]")
+	pod := c.DefaultQuery("pod", "")
+
+	now := time.Now().UTC()
+	end := fmt.Sprintf("%d", now.UnixNano())
+	start := fmt.Sprintf("%d", now.Add(time.Hour*-24).UnixNano())
+
+	queryExprArray := []string{}
+	labels := utils.Labels(start, end)
+	for _, label := range labels {
+		if c.DefaultQuery(label.(string), "") != "" {
+			queryExprArray = append(queryExprArray, utils.GetExpr(label.(string), c.DefaultQuery(label.(string), "")))
+		}
+	}
+
+	if pod != "" {
+		queryExprArray = append(queryExprArray, utils.GetPodExpr(pod))
+	}
+
+	queryExpr := fmt.Sprintf("{%s}", strings.Join(queryExprArray, ","))
+	for _, filter := range filters {
+		_, err := regexp.Compile(filter)
+		if err != nil {
+			utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("regex compile error, %s", err))
+			c.JSON(200, nil)
+			return
+		}
+		queryExpr = fmt.Sprintf("%s |~ `%s`", queryExpr, filter)
+	}
+
+	c.AbortWithStatusJSON(200, gin.H{"success": true, "data": queryExpr})
+	return
 }

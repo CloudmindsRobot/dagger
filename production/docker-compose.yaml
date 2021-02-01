@@ -1,35 +1,71 @@
 version: "3.8"
 services:
   ui:
+    build:
+      context: ..
+      dockerfile: ./build-image/Dockerfile.ui
+      target: ui
     image: quay.io/cloudminds/dagger-ui:latest
     hostname: dagger-ui
     container_name: dagger-ui
-    depends_on:
-      - backend
     ports:
       - "8080:8080"
     networks:
       - dagger
+    restart: on-failure
   backend:
+    build:
+      context: ..
+      dockerfile: ./build-image/Dockerfile.backend
+      target: backend
     image: quay.io/cloudminds/dagger-backend:latest
     hostname: dagger-backend
     container_name: dagger-backend
-    environment:
-      - LOKI_SERVER=http://127.0.0.1:3100 # your loki server address (optional)
+    depends_on:
+      - mysql
+      - alertmanager
+    # environment:
+    #   - LOKI_SERVER=http://127.0.0.1:3100 # your loki server address (optional)
     ports:
       - "8000:8000"
     command: ["sh", "-c", "./dagger"]
     networks:
       - dagger
     volumes:
-      - "./config/dagger.ini:/etc/dagger/dagger.ini"
+      - "../backend/dagger.ini:/etc/dagger/dagger.ini"
       - "static_data:/usr/src/app/static:rw"
-      - "sqlite_data:/usr/src/app/db:rw"
+      - "alertmanager_conf:/usr/src/app/conf:rw"
+    restart: on-failure
+  alertmanager:
+    image: prom/alertmanager:latest
+    hostname: dagger-alertmanager
+    container_name: dagger-alertmanager
+    ports:
+      - "9093:9093"
+    networks:
+      - dagger
+    volumes:
+      - "alertmanager_conf:/etc/alertmanager:rw"
+  mysql:
+    image: mysql:latest
+    hostname: dagger-mysql
+    container_name: dagger-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: log
+    ports:
+      - "3306:3306"
+    networks:
+      - dagger
+    volumes:
+      - "./config:/docker-entrypoint-initdb.d:rw"
 
 volumes:
   sqlite_data:
     driver: local
   static_data:
+    driver: local
+  alertmanager_conf:
     driver: local
 
 networks:

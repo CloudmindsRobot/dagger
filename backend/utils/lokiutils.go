@@ -1,6 +1,8 @@
 package utils
 
 import (
+	"bytes"
+	"crypto/md5"
 	"crypto/tls"
 	"dagger/backend/databases"
 	"dagger/backend/models"
@@ -9,6 +11,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -17,6 +20,7 @@ import (
 	"github.com/go-ldap/ldap/v3"
 	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
+	"gopkg.in/yaml.v2"
 	"gorm.io/gorm"
 )
 
@@ -71,7 +75,7 @@ func GenerateLevelRegex(level string) string {
 
 	all := GetLogLevelExpr("all")
 	if strings.ToLower(level) == "unknown" {
-		return fmt.Sprintf("!~ \"%s\"", all)
+		return fmt.Sprintf("!~ `%s`", all)
 	}
 	levelArray := []string{}
 	levelUnknownExist := false
@@ -96,17 +100,14 @@ func GenerateLevelRegex(level string) string {
 		}
 	}
 	if len(levelArray) > 0 {
-		levelExpr = fmt.Sprintf("|~ \"%s\"", strings.Join(levelArray, "|"))
-		levelExpr = strings.ReplaceAll(levelExpr, "\\\\", "\\")
+		levelExpr = fmt.Sprintf("|~ `%s`", strings.Join(levelArray, "|"))
 	}
 	if levelUnknownExist {
-		all = strings.ReplaceAll(all, "||", "|")
-		all = strings.ReplaceAll(all, "\\\\", "\\")
 		all = strings.Trim(all, "|")
 		if all == "" {
 			return ""
 		}
-		levelExpr = fmt.Sprintf("!~ \"%s\"", all)
+		levelExpr = fmt.Sprintf("!~ `%s`", all)
 	}
 
 	return levelExpr
@@ -162,9 +163,9 @@ func ShellHighlightShow(message string) string {
 					color = GetShellColor(strs[2])
 				}
 				if strs[1] == "1" || strs[1] == "" {
-					return fmt.Sprintf("<b style=\"color: %s !important;\">%s</b>", color, strs[3])
+					return fmt.Sprintf(`<b style="color: %s !important;">%s</b>`, color, strs[3])
 				} else {
-					return fmt.Sprintf("<b style=\"background-color: %s !important;color: slategray;\">%s</b>", color, strs[3])
+					return fmt.Sprintf(`<b style="background-color: %s !important;color: slategray;">%s</b>`, color, strs[3])
 				}
 			}
 			return item
@@ -178,7 +179,7 @@ func RegexHighlightShow(message string, filter string) string {
 	if filter != "" {
 		regFilter, _ := regexp.Compile(filter)
 		highlight = regFilter.ReplaceAllStringFunc(highlight, func(item string) string {
-			return fmt.Sprintf("<b style=\"color: #fb8c00 !important;\">%s</b>", item)
+			return fmt.Sprintf(`<b style="color: #fb8c00 !important;">%s</b>`, item)
 		})
 
 	}
@@ -251,7 +252,7 @@ func LdapCheck(username string, password string) (bool, *models.User) {
 	conn, err := ldap.Dial("tcp", fmt.Sprintf("%s:%d", ldapHost, ldapPort))
 
 	if err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap connect error: %s", err))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("ldap connect error: %s", err))
 		return false, nil
 	}
 	defer conn.Close()
@@ -260,7 +261,7 @@ func LdapCheck(username string, password string) (bool, *models.User) {
 		InsecureSkipVerify: true,
 	})
 	if err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap start error: %s", err))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("ldap start error: %s", err))
 		return false, nil
 	}
 
@@ -268,7 +269,7 @@ func LdapCheck(username string, password string) (bool, *models.User) {
 	ldapBindPassword, _ := runtime.Cfg.GetValue("ldap", "ldap_bind_password")
 	err = conn.Bind(ldapBindUsername, ldapBindPassword)
 	if err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap bind error: %s", err))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("ldap bind error: %s", err))
 		return false, nil
 	}
 
@@ -287,25 +288,25 @@ func LdapCheck(username string, password string) (bool, *models.User) {
 
 	var cur *ldap.SearchResult
 	if cur, err = conn.Search(sql); err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap server search failed.: %s", err))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("ldap server search failed.: %s", err))
 		return false, nil
 	}
 
 	if len(cur.Entries) == 0 {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("ldap not found user."))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("ldap not found user."))
 		return false, nil
 	}
 
 	user := cur.Entries[0]
 	err = conn.Bind(user.DN, password)
 	if err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("check user error."))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("check user error."))
 		return false, nil
 	}
 
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("%s", err))
 		return false, nil
 	}
 
@@ -325,4 +326,122 @@ func LdapCheck(username string, password string) (bool, *models.User) {
 	}
 
 	return true, &userModel
+}
+
+func Md5(data string) string {
+	keyByte := []byte(data)
+	hashKey := md5.Sum(keyByte)
+	md5Str := fmt.Sprintf("%x", hashKey)
+	return md5Str
+}
+
+func StructLables(lables []models.LogLabel, name string) string {
+	var elementArray []string
+
+	var keys []string
+	labelMap := make(map[string]string)
+	for _, label := range lables {
+		keys = append(keys, label.Key)
+		labelMap[label.Key] = label.Value
+	}
+	keys = append(keys, "name")
+	labelMap["name"] = name
+
+	sort.Strings(keys)
+	for _, k := range keys {
+		elementArray = append(elementArray, fmt.Sprintf("%s=%s", k, labelMap[k]))
+	}
+	return strings.Join(elementArray, "&")
+}
+
+func ToYAML(s models.RuleYAML) (*bytes.Buffer, error) {
+	d, err := yaml.Marshal(s)
+	if err != nil {
+		return nil, err
+	}
+	b := bytes.NewBuffer(d)
+	return b, nil
+}
+
+func GenerateYAML(rule models.LogRule) (string, error) {
+	labelsMap := make(map[string]interface{})
+	for _, label := range rule.Labels {
+		labelsMap[label.Key] = label.Value
+	}
+	alertYAML := models.AlertYAML{
+		Alert:  rule.Name,
+		For:    0,
+		Expr:   rule.LogQL,
+		Labels: labelsMap,
+		Annotations: map[string]interface{}{
+			"description": rule.Description,
+			"summary":     rule.Summary,
+			"key":         rule.Key,
+		},
+	}
+
+	file := models.RuleYAML{
+		Name:  rule.ID,
+		Rules: []models.AlertYAML{alertYAML},
+	}
+	b, err := ToYAML(file)
+	if err != nil {
+		return "", err
+	}
+	content := b.String()
+	return content, nil
+}
+
+func String2Time(timeStr string, timeZone string) time.Time {
+	local, _ := time.LoadLocation(timeZone)
+	t, _ := time.ParseInLocation("2006-01-02T15:04:05Z", timeStr, local)
+	return t
+}
+
+func TimeDateValueFormatter(v interface{}) string {
+	if typed, isTyped := v.(float64); isTyped {
+		return time.Unix(0, int64(typed)).Format("15:04:05")
+	}
+	return ""
+}
+
+func SplitDateTimeForMatrix(start string, end string) ([]int64, []string, int) {
+	startIndex, _ := strconv.ParseInt(start[0:10], 10, 64)
+	endIndex, _ := strconv.ParseInt(end[0:10], 10, 64)
+
+	m := endIndex - startIndex
+	interval := 1
+	if m > 1000 && m < 10000 {
+		interval = 10
+	} else if m > 10000 && m < 100000 {
+		interval = 100
+	} else if m > 100000 && m < 1000000 {
+		interval = 1000
+	} else if m > 1000000 && m < 10000000 {
+		interval = 10000
+	} else if m > 10000000 && m < 100000000 {
+		interval = 100000
+	} else if m > 100000000 && m < 1000000000 {
+		interval = 1000000
+	} else if m > 1000000000 && m < 10000000000 {
+		interval = 10000000
+	}
+
+	var index int64
+	index = 0
+	splitDateTimeArray := []int64{}
+	splitValueArray := []string{}
+	for {
+		if index <= (endIndex - startIndex + 1) {
+			if int(index)%interval == 0 {
+				splitDateTimeArray = append(splitDateTimeArray, (startIndex+index)*1000)
+			}
+			splitValueArray = append(splitValueArray, "0")
+			index++
+			continue
+		}
+		break
+	}
+
+	return splitDateTimeArray, splitValueArray, interval
 }

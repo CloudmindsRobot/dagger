@@ -72,7 +72,7 @@ func LokiSnapshotDelete(c *gin.Context) {
 		cmd := fmt.Sprintf("rm -rf %s", filepath)
 		_, err := exec.Command("bash", "-c", cmd).CombinedOutput()
 		if err != nil {
-			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("rm file error, %s", err))
+			utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("rm file error, %s", err))
 			c.AbortWithStatusJSON(500, gin.H{"success": false, "message": "请查看服务器日志"})
 			return
 		}
@@ -100,18 +100,18 @@ func LokiSnapshotCreate(c *gin.Context) {
 	var postData map[string]interface{}
 	err := json.Unmarshal(postDataByte, &postData)
 	if err != nil {
-		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("%s", err))
+		utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("%s", err))
 		c.AbortWithStatusJSON(200, gin.H{"success": false, "message": "请查看服务器日志"})
 		return
 	}
 
 	dir, _ := os.Getwd()
 
-	snapshotDir := fmt.Sprintf("%s/static/snapshot/%s", dir, time.Now().Format("20060102"))
+	snapshotDir := fmt.Sprintf("%s/static/snapshot/%s", dir, time.Now().UTC().Format("20060102"))
 	cmd := fmt.Sprintf("mkdir -p %s", snapshotDir)
 	_, err = exec.Command("bash", "-c", cmd).CombinedOutput()
 	if err != nil {
-		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mkdir error, %s", err))
+		utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("mkdir error, %s", err))
 		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "创建快照文件目录失败"})
 		return
 	}
@@ -126,12 +126,12 @@ func LokiSnapshotCreate(c *gin.Context) {
 			cmd = fmt.Sprintf("mv %s %s", absolutePath, targetPath)
 			_, err = exec.Command("bash", "-c", cmd).CombinedOutput()
 			if err != nil {
-				utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mv file error, %s", err))
+				utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("mv file error, %s", err))
 				c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "重命名结果临时文件失败"})
 				return
 			}
 		} else {
-			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mv file error, %s", err))
+			utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("mv file error, %s", err))
 			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "快照文件已存在"})
 			return
 		}
@@ -139,7 +139,7 @@ func LokiSnapshotCreate(c *gin.Context) {
 		cmd = fmt.Sprintf("wc -l %s", targetPath)
 		out, err := exec.Command("bash", "-c", cmd).CombinedOutput()
 		if err != nil {
-			utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("mv file error, %s", err))
+			utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("mv file error, %s", err))
 			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "统计快照文件内容失败"})
 			return
 		}
@@ -154,13 +154,13 @@ func LokiSnapshotCreate(c *gin.Context) {
 		user := userI.(models.User)
 		snapshot := models.LogSnapshot{
 			Name:        filename,
-			CreateAt:    time.Now(),
+			CreateAt:    time.Now().UTC(),
 			StartTime:   startTime.Add(time.Hour * -8),
 			EndTime:     endTime.Add(time.Hour * -8),
-			DownloadURL: fmt.Sprintf("/api/v1/loki/static/snapshot/%s", fmt.Sprintf("%s/%s", time.Now().Format("20060102"), filename)),
+			DownloadURL: fmt.Sprintf("/api/v1/loki/static/snapshot/%s", fmt.Sprintf("%s/%s", time.Now().UTC().Format("20060102"), filename)),
 			Count:       count,
 			User:        user,
-			Dir:         fmt.Sprintf("static/snapshot/%s/%s", time.Now().Format("20060102"), filename),
+			Dir:         fmt.Sprintf("static/snapshot/%s/%s", time.Now().UTC().Format("20060102"), filename),
 		}
 
 		databases.DB.Create(&snapshot)
@@ -199,7 +199,7 @@ func LokiSnapshotDetail(c *gin.Context) {
 
 	file, err := os.Open(filepath)
 	if err != nil {
-		utils.Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("read file error, %s", err))
+		utils.Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("read file error, %s", err))
 		c.AbortWithStatusJSON(400, gin.H{"success": false, "message": "读取快照文件失败"})
 		return
 	}
