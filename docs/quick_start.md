@@ -168,7 +168,7 @@ smtp_auth_password =
 - 启动服务
 
 ```
-$ docker-compose up -d
+$ docker-compose -f production/docker-compose.yaml up -d
 ```
 
 ### 宿主机直接运行
