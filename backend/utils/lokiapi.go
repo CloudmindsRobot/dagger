@@ -19,7 +19,7 @@ func QueryRange(query string, limit int, start string, end string, direction str
 	var err error
 	for {
 		if repeat < 5 {
-			data, err = HttpRequest(queryURL, "GET", map[string]string{"X-Scope-OrgID": ""}, params, "json")
+			data, err = HttpRequest(queryURL, "GET", map[string]string{"X-Scope-OrgID": `""`}, params, "json")
 			if err != nil {
 				repeat++
 				time.Sleep(time.Millisecond * 100)
@@ -53,7 +53,7 @@ func Labels(start string, end string) []interface{} {
 	var err error
 	for {
 		if repeat < 5 {
-			data, err = HttpRequest(queryURL, "GET", map[string]string{"X-Scope-OrgID": ""}, nil, "json")
+			data, err = HttpRequest(queryURL, "GET", map[string]string{"X-Scope-OrgID": `""`}, nil, "json")
 			if err != nil {
 				repeat++
 				Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("get loki labels error %s", err))
@@ -94,7 +94,7 @@ func LabelValues(label string, start string, end string) []interface{} {
 	var err error
 	for {
 		if repeat < 5 {
-			data, err = HttpRequest(queryURL, "GET", map[string]string{"X-Scope-OrgID": ""}, nil, "json")
+			data, err = HttpRequest(queryURL, "GET", map[string]string{"X-Scope-OrgID": `""`}, nil, "json")
 			if err != nil {
 				repeat++
 				Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("get loki label values error %s", err))
@@ -127,7 +127,7 @@ func CreateOrUpdateRuleGroup(namespace string, yaml string) (bool, error) {
 	var data string
 	var err error
 
-	data, err = HttpRequest(fmt.Sprintf("%s%s", runtime.LokiServer, url), "POST", map[string]string{"X-Scope-OrgID": ""}, yaml, "yaml")
+	data, err = HttpRequest(fmt.Sprintf("%s%s", runtime.LokiServer, url), "POST", map[string]string{"X-Scope-OrgID": `""`}, yaml, "yaml")
 	if err != nil {
 		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("create or update loki rule group error %s", err))
 		return false, err
@@ -153,7 +153,7 @@ func DeleteRuleGroup(namespace string, groupName string) (bool, error) {
 	var data string
 	var err error
 
-	data, err = HttpRequest(fmt.Sprintf("%s%s", runtime.LokiServer, url), "DELETE", map[string]string{"X-Scope-OrgID": ""}, "", "yaml")
+	data, err = HttpRequest(fmt.Sprintf("%s%s", runtime.LokiServer, url), "DELETE", map[string]string{"X-Scope-OrgID": `""`}, "", "yaml")
 	if err != nil {
 		Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("delete loki rule group error %s", err))
 		return false, err
@@ -181,7 +181,7 @@ func LoadRules(namespace string) string {
 	var err error
 	for {
 		if repeat < 5 {
-			data, err = HttpRequest(fmt.Sprintf("%s%s", runtime.LokiServer, url), "GET", map[string]string{"X-Scope-OrgID": ""}, nil, "json")
+			data, err = HttpRequest(fmt.Sprintf("%s%s", runtime.LokiServer, url), "GET", map[string]string{"X-Scope-OrgID": `""`}, nil, "json")
 			if err != nil {
 				repeat++
 				Log4Zap(zap.WarnLevel).Warn(fmt.Sprintf("get loki rule group error %s", err))
