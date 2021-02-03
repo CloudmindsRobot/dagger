@@ -209,7 +209,7 @@
       </v-layout>
     </v-container>
     <v-btn
-      v-if="!advanced"
+      v-if="resultType === 'streams'"
       fab
       color="success"
       class="v-btn v-btn--bottom v-btn--contained v-btn--fab v-btn--fixed v-btn--right v-btn--round theme--dark v-size--middle"
@@ -724,7 +724,11 @@ export default {
     handlerWebsocketOnopen() {
       this.loading = true
       this.icon = 'pause_circle_outline'
-      this.$refs.lokiFilter.disabled = true
+      if (this.advanced) {
+        this.$refs.lokiFilterAdvance.disabled = true
+      } else {
+        this.$refs.lokiFilter.disabled = true
+      }
       this.$vuetify.goTo('#log-card', this.handlerGotoOptions())
     },
     handlerWebsocketOnerror() {
@@ -751,12 +755,16 @@ export default {
             'transition: background-color 2s;'
         }
         clearTimeout(this.timeoutHandler)
-      }, 1)
+      }, 5)
     },
     handlerWebsocketClose() {
       this.loading = false
       this.icon = 'play_circle_outline'
-      this.$refs.lokiFilter.disabled = false
+      if (this.advanced) {
+        this.$refs.lokiFilterAdvance.disabled = false
+      } else {
+        this.$refs.lokiFilter.disabled = false
+      }
       this.items.forEach((item) => {
         if (item.info !== undefined) item.info.animation = ''
       })
@@ -768,7 +776,11 @@ export default {
         this.websocket = null
         this.loading = false
         this.icon = 'play_circle_outline'
-        this.$refs.lokiFilter.disabled = false
+        if (this.advanced) {
+          this.$refs.lokiFilterAdvance.disabled = false
+        } else {
+          this.$refs.lokiFilter.disabled = false
+        }
       }
     },
     handlerLiveQuerying() {

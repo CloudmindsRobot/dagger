@@ -15,6 +15,7 @@
       @keyup="handlerInput"
       @click:clear="handlerClear"
       ref="advanceFilter"
+      :disabled="disabled"
     >
       <template v-slot:append v-if="settings.alertEnabled">
         <v-btn text small color="primary" @click.stop="handlerOpenDeriveDialog">
@@ -112,6 +113,7 @@ export default {
     ],
     headers: [{ text: '', value: 'item', align: 'start' }],
     loading: false,
+    disabled: false,
     tmpFilters: [],
     logQL: '',
     keyword: '',

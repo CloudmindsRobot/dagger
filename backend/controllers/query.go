@@ -127,7 +127,7 @@ func LokiList(c *gin.Context) {
 				index := 0
 				for {
 					index++
-					if index < step {
+					if index < step && (int(vEle[0].(float64))-int(startIndex)+index) < len(vs) {
 						vs[int(vEle[0].(float64))-int(startIndex)+index] = vEle[1].(string)
 					} else {
 						break

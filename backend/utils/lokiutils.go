@@ -432,7 +432,7 @@ func SplitDateTimeForMatrix(start string, end string) ([]int64, []string, int) {
 	splitDateTimeArray := []int64{}
 	splitValueArray := []string{}
 	for {
-		if index <= (endIndex - startIndex + 1) {
+		if index < (endIndex - startIndex + 1) {
 			if int(index)%interval == 0 {
 				splitDateTimeArray = append(splitDateTimeArray, (startIndex+index)*1000)
 			}
