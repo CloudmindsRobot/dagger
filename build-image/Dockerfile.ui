@@ -1,7 +1,7 @@
 FROM node:14.13 as builder
 WORKDIR /usr/src/app
 COPY ui .
-RUN npm i npm@latest -g && npm install && npm run build
+RUN npm install && npm run build
 
 FROM nginx:alpine as ui
 LABEL MAINTAINER="leon.chen"
