@@ -53,7 +53,7 @@ function DrawerItems(settings) {
         icon: 'keyboard_arrow_up',
         'icon-alt': 'notes',
         text: '日志查询',
-        model: false,
+        active: true,
         index: 'loki-view',
         children: [
           {
@@ -90,7 +90,7 @@ function DrawerItems(settings) {
       icon: 'keyboard_arrow_up',
       'icon-alt': 'warning',
       text: '告警',
-      model: false,
+      active: true,
       index: 'loki-alert',
       children: alertBar,
     })

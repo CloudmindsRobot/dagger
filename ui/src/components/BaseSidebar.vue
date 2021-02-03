@@ -15,9 +15,9 @@
         </v-row>
         <v-list-group
           v-else-if="item.children"
-          v-model="active"
+          v-model="item.active"
           :key="item.text"
-          :prepend-icon="item.model ? item.icon : item['icon-alt']"
+          :prepend-icon="item.active ? item.icon : item['icon-alt']"
           append-icon
         >
           <template v-slot:activator>
@@ -68,7 +68,6 @@ export default {
   data: () => ({
     localSidebar: false,
     localApp: null,
-    active: true,
   }),
   watch: {
     localSidebar(val) {
