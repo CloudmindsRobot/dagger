@@ -568,7 +568,7 @@ spec:
         app: dagger-mysql
     spec:
       containers:
-        - image: quay.io/cloudminds/mysql:latest
+        - image: quay.io/cloudminds/dagger-mysql:latest
           name: dagger-mysql
           env:
             - name: MYSQL_ROOT_PASSWORD

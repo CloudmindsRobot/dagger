@@ -49,7 +49,7 @@ services:
     #   context: ..
     #   dockerfile: ./build-image/Dockerfile.mysql
     #   target: mysql
-    image: quay.io/cloudminds/mysql:latest
+    image: quay.io/cloudminds/dagger-mysql:latest
     hostname: dagger-mysql
     container_name: dagger-mysql
     environment:
