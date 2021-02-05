@@ -491,6 +491,13 @@ spec:
           name: dagger-ui
           ports:
             - containerPort: 8080
+          resources:
+            limits:
+              cpu: "2"
+              memory: 4Gi
+            requests:
+              cpu: 500m
+              memory: 256Mi
       restartPolicy: Always
 
 ---
@@ -561,7 +568,7 @@ spec:
         app: dagger-mysql
     spec:
       containers:
-        - image: mysql:5.7
+        - image: quay.io/cloudminds/mysql:latest
           name: dagger-mysql
           env:
             - name: MYSQL_ROOT_PASSWORD
@@ -581,16 +588,10 @@ spec:
               cpu: 500m
               memory: 256Mi
           volumeMounts:
-            - mountPath: /docker-entrypoint-initdb.d
-              name: dagger-mysql-init
             - mountPath: /var/lib/mysql
               name: mysql-data
       restartPolicy: Always
       volumes:
-        - name: dagger-mysql-init
-          configMap:
-            defaultMode: 420
-            name: dagger-mysql-init
         - name: mysql-data
           persistentVolumeClaim:
             claimName: mysql-data

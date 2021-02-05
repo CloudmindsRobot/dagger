@@ -1,4 +1,4 @@
-FROM mysql:5.7 as mysql
+FROM mysql:8.0 as mysql
 LABEL MAINTAINER="leon.chen"
 
 COPY production .
