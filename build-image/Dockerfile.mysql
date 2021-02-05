@@ -1,0 +1,6 @@
+FROM mysql:5.7 as mysql
+LABEL MAINTAINER="leon.chen"
+
+COPY production .
+
+RUN mv config/*.sql /docker-entrypoint-initdb.d

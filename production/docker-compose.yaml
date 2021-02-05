@@ -45,7 +45,11 @@ services:
     volumes:
       - "alertmanager_conf:/etc/alertmanager:rw"
   mysql:
-    image: mysql:5.7
+    # build:
+    #   context: ..
+    #   dockerfile: ./build-image/Dockerfile.mysql
+    #   target: mysql
+    image: quay.io/cloudminds/mysql:latest
     hostname: dagger-mysql
     container_name: dagger-mysql
     environment:
@@ -55,12 +59,8 @@ services:
       - "3306:3306"
     networks:
       - dagger
-    volumes:
-      - "./config:/docker-entrypoint-initdb.d:rw"
 
 volumes:
-  sqlite_data:
-    driver: local
   static_data:
     driver: local
   alertmanager_conf:

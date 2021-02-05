@@ -78,6 +78,16 @@ jobs:
           username: ${{ secrets.QUARIO_USERNAME }}
           password: ${{ secrets.QUARIO_PASSWORD }}
 
+      - name: Build mysql and push
+        id: docker_build_mysql
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./build-image/Dockerfile.mysql
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: quay.io/cloudminds/dagger-mysql:${{ steps.prepare.outputs.tags }}
+
       - name: Build backend and push
         id: docker_build_backend
         uses: docker/build-push-action@v2
@@ -86,7 +96,6 @@ jobs:
           file: ./build-image/Dockerfile.backend
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
-          # push: false
           tags: quay.io/cloudminds/dagger-backend:${{ steps.prepare.outputs.tags }}
 
       - name: Build ui and push
@@ -97,5 +106,4 @@ jobs:
           file: ./build-image/Dockerfile.ui
           platforms: linux/amd64
           push: ${{ github.event_name != 'pull_request' }}
-          # push: false
           tags: quay.io/cloudminds/dagger-ui:${{ steps.prepare.outputs.tags }}
