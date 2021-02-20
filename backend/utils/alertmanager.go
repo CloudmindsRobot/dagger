@@ -165,7 +165,7 @@ func DynamicAlertmanagerConf() error {
 			SMTPAuthPassword: conf.Secret(SMTPAuthPass),
 		}
 		receivers := []*conf.Receiver{
-			&conf.Receiver{
+			{
 				Name: "default-receiver",
 			},
 		}

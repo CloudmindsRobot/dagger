@@ -443,6 +443,8 @@ func LokiRuleCreate(c *gin.Context) {
 	if flush2Alertmanager {
 		err := utils.DynamicAlertmanagerConf()
 		if err != nil {
+			databases.DB.Delete(&models.LogRule{Key: rule.Key})
+			utils.CacheRule()
 			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
 			return
 		}
@@ -499,6 +501,8 @@ func LokiRuleUpdate(c *gin.Context) {
 	if flush2Alertmanager {
 		err := utils.DynamicAlertmanagerConf()
 		if err != nil {
+			databases.DB.Delete(&models.LogRule{Key: rule.Key})
+			utils.CacheRule()
 			c.AbortWithStatusJSON(400, gin.H{"success": false, "message": err.Error()})
 			return
 		}
