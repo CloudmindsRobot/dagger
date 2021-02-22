@@ -88,6 +88,16 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: quay.io/cloudminds/dagger-mysql:${{ steps.prepare.outputs.tags }}
 
+      - name: Build alertmanager and push
+        id: docker_build_alertmanager
+        uses: docker/build-push-action@v2
+        with:
+          context: .
+          file: ./build-image/Dockerfile.alertmanager
+          platforms: linux/amd64
+          push: ${{ github.event_name != 'pull_request' }}
+          tags: quay.io/cloudminds/dagger-alertmanager:${{ steps.prepare.outputs.tags }}
+
       - name: Build backend and push
         id: docker_build_backend
         uses: docker/build-push-action@v2

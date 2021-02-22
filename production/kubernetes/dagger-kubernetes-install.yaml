@@ -520,7 +520,7 @@ spec:
         app: dagger-alertmanager
     spec:
       containers:
-        - image: prom/alertmanager:v0.21.0
+        - image: quay.io/cloudminds/dagger-alertmanager:latest
           name: dagger-alertmanager
           ports:
             - containerPort: 9093

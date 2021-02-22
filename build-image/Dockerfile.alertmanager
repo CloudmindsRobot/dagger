@@ -1,0 +1,6 @@
+FROM prom/alertmanager:v0.21.0 as alertmanager
+LABEL MAINTAINER="leon.chen"
+
+COPY production .
+
+RUN cp config/alertmanager.yml /etc/alertmanager/

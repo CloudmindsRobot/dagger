@@ -34,16 +34,6 @@ services:
       - "static_data:/usr/src/app/static:rw"
       - "alertmanager_conf:/usr/src/app/conf:rw"
     restart: on-failure
-  alertmanager:
-    image: prom/alertmanager:v0.21.0
-    hostname: dagger-alertmanager
-    container_name: dagger-alertmanager
-    ports:
-      - "9093:9093"
-    networks:
-      - dagger
-    volumes:
-      - "alertmanager_conf:/etc/alertmanager:rw"
   mysql:
     # build:
     #   context: ..
@@ -59,6 +49,20 @@ services:
       - "3306:3306"
     networks:
       - dagger
+  alertmanager:
+    # build:
+    #   context: ..
+    #   dockerfile: ./build-image/Dockerfile.alertmanager
+    #   target: alertmanager
+    image: quay.io/cloudminds/dagger-alertmanager:latest
+    hostname: dagger-alertmanager
+    container_name: dagger-alertmanager
+    ports:
+      - "9093:9093"
+    networks:
+      - dagger
+    volumes:
+      - "alertmanager_conf:/etc/alertmanager:rw"
 
 volumes:
   static_data:

@@ -32,27 +32,6 @@ func init() {
 	SMTPAuthUser, _ = runtime.Cfg.GetValue("alertmanager", "smtp_auth_username")
 	SMTPAuthPass, _ = runtime.Cfg.GetValue("alertmanager", "smtp_auth_password")
 	SMTPFrom, _ = runtime.Cfg.GetValue("alertmanager", "smtp_from")
-
-	dur, _ := model.ParseDuration("5m")
-	c := conf.Config{
-		Global: &conf.GlobalConfig{
-			ResolveTimeout: dur,
-		},
-		Receivers: []*conf.Receiver{
-			&conf.Receiver{
-				Name: "default-receiver",
-			},
-		},
-		Route: &conf.Route{
-			Receiver: "default-receiver",
-			Routes:   []*conf.Route{},
-		},
-	}
-
-	err := ioutil.WriteFile("conf/alertmanager.yml", []byte(c.String()), 0644)
-	if err != nil {
-		Log4Zap(zap.ErrorLevel).Error(fmt.Sprintf("初始化alertmanager.yml: %s", err))
-	}
 }
 
 func FlushConf2Alertmanager(content string) error {
