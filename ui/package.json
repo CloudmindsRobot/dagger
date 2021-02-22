@@ -14,19 +14,12 @@
     "lodash": "^4.17.20",
     "sass": "^1.26.10",
     "sass-loader": "^10.0.2",
-    "sql-formatter": "^2.3.3",
-    "sshpk": "^1.16.1",
     "vue": "^2.6.12",
     "vue-echarts": "^4.1.0",
     "vue-router": "^3.4.3",
-    "vue2-ace-editor": "0.0.15",
     "vuetify": "^2.3.10",
     "vuetify-confirm": "^2.0.6",
-    "vuex": "^3.5.1",
-    "xterm": "^4.9.0",
-    "xterm-addon-attach": "^0.5.0",
-    "xterm-addon-fit": "^0.3.0",
-    "xterm-addon-web-links": "^0.2.1"
+    "vuex": "^3.5.1"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "^3.12.1",
