@@ -8,6 +8,7 @@ dagger
 .idea/
 static/export
 static/snapshot
+static/rules
 .DS_Store
 
 backend/static
