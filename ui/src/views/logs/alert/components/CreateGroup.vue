@@ -1,5 +1,5 @@
 <template>
-  <span>
+  <div>
     <v-btn color="primary" @click.stop="handlerOpenDialog">创建组</v-btn>
     <v-dialog v-model="dialog" max-width="500" persistent scrollable>
       <v-card class="px-1">
@@ -45,20 +45,20 @@
         </v-card-text>
         <v-divider></v-divider>
         <v-card-actions>
-          <v-layout row justify-space-around>
-            <v-flex xs5>
+          <v-row justify="space-around">
+            <v-col cols="6" md="3">
               <v-btn color="primary" block @click="handlerCreateUserGroup">
                 创建
               </v-btn>
-            </v-flex>
-            <v-flex xs5>
+            </v-col>
+            <v-col cols="6" md="3">
               <v-btn @click="handlerCloseDialog" block>关闭</v-btn>
-            </v-flex>
-          </v-layout>
+            </v-col>
+          </v-row>
         </v-card-actions>
       </v-card>
     </v-dialog>
-  </span>
+  </div>
 </template>
 
 <script>

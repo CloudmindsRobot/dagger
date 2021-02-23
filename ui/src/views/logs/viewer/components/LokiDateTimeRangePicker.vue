@@ -68,16 +68,16 @@
         </v-row>
       </v-card-text>
       <v-card-actions>
-        <v-layout row justify-space-around>
-          <v-flex xs5>
-            <v-btn color="primary" block @click="handlerCheckDatePicker"
-              >确定</v-btn
-            >
-          </v-flex>
-          <v-flex xs5>
+        <v-row justify="space-around">
+          <v-col cols="6" md="3">
+            <v-btn color="primary" block @click="handlerCheckDatePicker">
+              确定
+            </v-btn>
+          </v-col>
+          <v-col cols="6" md="3">
             <v-btn block @click="handlerCancelDatePicker">取消</v-btn>
-          </v-flex>
-        </v-layout>
+          </v-col>
+        </v-row>
       </v-card-actions>
     </v-card>
   </v-menu>

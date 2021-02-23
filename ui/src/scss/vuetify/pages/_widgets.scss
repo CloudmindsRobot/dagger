@@ -1,0 +1,126 @@
+/*******************/
+/*Comment widgets*/
+/*******************/
+
+.comment-widgets {
+  .comment-row {
+    border-bottom: 1px solid transparent;
+    border-left: 3px solid transparent;
+
+    &:last-child {
+      border-bottom: 0px;
+    }
+
+    &:hover,
+    &.active {
+      border-left: 3px solid $info;
+    }
+
+    &:hover .comment-footer,
+    &.active .comment-footer {
+      .action-icons {
+        visibility: visible;
+      }
+    }
+  }
+
+  .comment-footer {
+    .action-icons {
+      visibility: hidden;
+
+      a {
+        color: $gray-500;
+
+        &:hover,
+        &.active {
+          color: $info;
+        }
+      }
+    }
+  }
+}
+
+
+// 
+// Todo
+// 
+.todo-cards {
+  .v-card {
+    background: $light-primary;
+  }
+}
+
+.progress-cards {
+  .v-card {
+    background: $light-warning;
+  }
+}
+
+.completed-cards {
+  .v-card {
+    background: $light-success;
+  }
+}
+
+.hold-cards {
+  .v-card {
+    background: $light-danger
+  }
+}
+
+// 
+//Contact Listing app
+// 
+.contact-listing-app {
+    table tbody tr td {
+        padding: 16px;
+    }
+}
+
+
+
+// 
+// Contact 
+// 
+.contact-app {
+    overflow: hidden;
+    .contact-list{
+        overflow:auto;
+        max-height:calc(100vh - 295px);
+    }
+}
+// 
+// Email
+// 
+.email-app{
+  overflow: hidden;
+  .email-list {
+    overflow: auto;
+    height: calc(100vh - 295px) !important;
+   }
+  
+  .show-email-sidebar .v-navigation-drawer{
+    transform: translateX(0%)!important;
+    left:0px;
+  }
+}
+.selectmailbox {
+    display:flex;
+    height:100%;
+    justify-content:center;
+    align-items:center;
+  }
+@media (max-width: 768px){
+    .close-detail, .close-email-sidebar{
+        display: none;
+    }
+  .email-sidebar, .show-detail, .contact-sidebar{
+    position:absolute;
+    width:260px;
+    z-index: 2;
+    height:100%;
+  }
+  .show-detail{
+    width: 100%;
+  } 
+}

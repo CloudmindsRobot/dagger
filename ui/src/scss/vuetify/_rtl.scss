@@ -1,0 +1,74 @@
+.v-application--is-rtl{
+    #main-sidebar{
+        position: fixed!important;
+    }
+
+    // 
+    // border
+    // 
+    .border-left {
+        border-left: 0px;
+        border-right: 1px solid rgba(0,0,0,.1);
+    }
+
+    .border-right {
+        border-right: 0px;
+        border-left: 1px solid rgba(0,0,0,.1);
+    }
+
+    // 
+    // FAB Button
+    // 
+    .v-btn--fab.v-btn--absolute.v-btn--right, .v-btn--fab.v-btn--fixed.v-btn--right{
+        right: auto;
+        left: 16px;
+    }
+
+    .v-btn--fab.v-btn--absolute.v-btn--left, .v-btn--fab.v-btn--fixed.v-btn--left{
+        left: auto;
+        right: 16px;
+    }
+
+    .float-right {
+        float: left !important;
+    }
+
+    .float-left {
+        float: right !important;
+    }
+
+    // 
+    // Dashboard
+    // 
+    .month-table {
+        tr.month-item {
+            td:first-child {
+                border-left: 0 solid transparent;
+                border-right: 2px solid transparent;
+            }
+            &:hover,
+            &.active {
+                background: transparent !important;
+                    td:first-child {
+                        border-left: 0 solid $info;
+                        border-right: 2px solid $info;
+                    }
+            }
+        }
+    }
+}
+
+// 
+// Dark + RTL border
+// 
+
+.v-application.theme--dark.v-application--is-rtl {
+    .border-left {
+        border-left: 0;
+        border-right: 1px solid rgba(255, 255, 255, 0.12);;
+    }
+    .border-right {
+        border-right: 0;
+        border-left: 1px solid rgba(255, 255, 255, 0.12);;
+    }
+}

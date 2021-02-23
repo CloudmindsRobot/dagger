@@ -1,0 +1,87 @@
+// 
+// Analytical Dashboard
+// 
+
+@include media-breakpoint-up(lg) {
+    .profile-bg-height {
+        max-height: 187px;
+    }
+
+    .blog-img-height {
+        max-height: 220px;
+    }
+}
+
+@include media-breakpoint-up(xl) {
+    .blog-img-height {
+        max-height: 265px;
+    }
+}
+
+// 
+// Classic Dashboard
+// 
+.month-table {
+    tr.month-item {
+        td:first-child {
+            border-left: 2px solid transparent;
+        }
+        &:hover,
+        &.active {
+            background: transparent !important;
+                td:first-child {
+                    border-left: 2px solid $info;
+                }
+        }
+        td {
+            padding: 12px;
+        }
+    } 
+}
+
+// 
+// Demographical Dashboard
+// 
+.chart-inner-icon {
+    position: absolute;
+    top: 25px;
+    left: 0;
+    right: 0;
+    width: 35px;
+    margin: 0 auto;
+}
+
+// 
+// Minimal Dashboard
+// 
+@include media-breakpoint-up(md) {
+  .total-visits {
+    #map-svg {
+      min-height: 300px;
+      width: 650px;
+      display: flex;
+      margin: 0 auto;
+    }
+  }
+}
+
+// 
+// Overview Dashboard
+// 
+.card-img-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    padding: 1.25rem;
+}
+
+.profile-card .profile-img {
+    max-height: 364px;
+}
+
+.social-profile {
+    text-align: center;
+    background: rgba(7,10,43,.8);
+}

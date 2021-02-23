@@ -1,0 +1,96 @@
+.v-application--is-ltr {
+  &.theme--dark {
+    .v-navigation-drawer.white {
+      background-color: #1e1e1e !important;
+    }
+  }
+  #main-sidebar {
+    position: fixed !important;
+    .v-list-item__icon:first-child {
+      margin-right: 15px;
+    }
+    .v-list-group {
+      margin-bottom: 8px;
+      .v-list-group__items > .v-list-item .v-icon,
+      .sicon {
+        visibility: hidden;
+      }
+    }
+    &.v-navigation-drawer--open-on-hover {
+      .v-list-group .v-list-group__items .v-list-item .v-icon {
+        visibility: visible;
+      }
+    }
+    .v-list-item__icon {
+      margin: 12px 0;
+    }
+    &.v-navigation-drawer--mini-variant .v-list-item > *:first-child {
+      margin-right: 0px;
+    }
+    .first-dd {
+      .v-list-item__icon:first-child i {
+        font-size: 16px;
+      }
+    }
+    .v-subheader {
+      height: 20px;
+      margin-top: 20px;
+    }
+    .v-list-group--sub-group {
+      .v-list-group__header__prepend-icon {
+        order: 2;
+        margin-right: 0px;
+      }
+      .sicon {
+        margin-right: 15px;
+      }
+      .v-list-group__header {
+        padding-left: 0px;
+      }
+      .v-list-item {
+        padding: 0 8px;
+      }
+    }
+  }
+}
+.v-application--is-rtl {
+  #main-sidebar {
+    .v-list-item__icon:first-child {
+      margin-left: 15px;
+    }
+    .v-list-group--sub-group {
+      .v-list-group__header {
+        padding: 0px 8px;
+      }
+      .sicon {
+        margin-left: 15px;
+      }
+      .v-list-group__header__prepend-icon {
+        order: 2;
+        margin-left: 0px;
+      }
+      .v-list-group__items .v-list-item {
+        padding: 0 8px;
+      }
+    }
+    &.v-navigation-drawer--mini-variant .v-list-item > *:first-child {
+      margin: 15px 0px !important;
+    }
+  }
+}
+#main-sidebar {
+  &.v-navigation-drawer--mini-variant
+    .v-list-group--no-action
+    .v-list-group__items,
+  &.v-navigation-drawer--mini-variant .v-list-group--sub-group {
+    display: block;
+  }
+
+  &.v-navigation-drawer--mini-variant
+    .v-list-group
+    .v-list-group__items
+    > .v-list-item
+    .sicon {
+    visibility: visible;
+  }
+}

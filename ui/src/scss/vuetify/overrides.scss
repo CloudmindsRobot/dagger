@@ -1,0 +1,21 @@
+@import "card";
+@import "layout";
+@import "sidebar";
+@import "v-bar";
+@import "loader";
+@import "pages/dashboards";
+@import "pages/widgets";
+
+// Icons
+
+@import "../icons/font-awesome/css/fontawesome-all.css";
+@import "../icons/themify-icons/themify-icons.css";
+@import "../icons/simple-line-icons/css/simple-line-icons.css";
+
+// Theme - Dark
+
+@import "dark";
+
+// Theme - rtl
+
+@import "rtl";

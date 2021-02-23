@@ -1,0 +1,145 @@
+.mini-sidebar {
+  .logo-text {
+    display: none;
+  }
+}
+h1,
+h2,
+h3,
+h4,
+h5 {
+  font-weight: 600;
+}
+.border-top {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+.border-bottom {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.border-left {
+  border-left: 1px solid rgba(0, 0, 0, 0.1);
+}
+.border-right {
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.border {
+  border: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.position-relative {
+  position: relative;
+}
+.theme--light {
+  .headline,
+  .v-card .title {
+    color: rgba(0, 0, 0, 0.8);
+  }
+}
+
+.v-sheet.v-app-bar.v-toolbar:not(.v-sheet--outlined),
+.v-sheet.v-card:not(.v-sheet--outlined) {
+  box-shadow: $box-shadow;
+}
+
+@media (max-width: 1024px) {
+  .common-left-right {
+    .v-navigation-drawer {
+      position: absolute;
+      transform: translatex(-100%);
+      z-index: 1;
+      box-shadow: none;
+    }
+  }
+}
+@media (min-width: 1025px) {
+  .common-left-right {
+    .v-navigation-drawer {
+      transform: translatex(0%) !important;
+    }
+  }
+}
+
+.custom-shaodow {
+  box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
+  -webkit-box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
+  -moz-box-shadow: 1px 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.img-fluid {
+  max-width: 100%;
+  height: auto;
+}
+
+.rounded {
+  border-radius: 4px;
+}
+
+.rounded-circle {
+  border-radius: 50%;
+}
+
+a {
+  text-decoration: none;
+}
+
+.w-100 {
+  width: 100%;
+}
+
+.v-application a.link {
+  color: #455a64;
+  &:hover {
+    color: #009efb;
+  }
+}
+
+.op-5 {
+  opacity: 0.5;
+}
+
+.position-relative {
+  position: relative;
+}
+
+.text-decoration-line {
+  text-decoration: line-through;
+}
+
+.lh-22 {
+  line-height: 22px;
+}
+
+.down-top-padding {
+  > .row {
+    &:not(:first-child) {
+      > [class*="col-"] {
+        padding-top: 0;
+        padding-bottom: 0;
+      }
+    }
+  }
+}
+
+//
+// Apexchart
+//
+.apexcharts-toolbar {
+  z-index: 1 !important;
+}
+.fill-color {
+  fill: currentColor !important;
+}
+
+// Colors
+.color-code code {
+  display: flex;
+}
+
+.theme--light .v-main {
+  background-color: #eef5f9;
+}
+
+.subtitle-2 {
+  color: $subtitle-color;
+}
