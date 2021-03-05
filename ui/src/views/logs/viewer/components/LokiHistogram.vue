@@ -151,7 +151,7 @@ export default {
     },
     handlerDataZoom(event) {
       const splitPercent = parseInt(100 / (event.end - event.start))
-      const size = splitPercent * 20
+      const size = splitPercent * 10
       this.start = event.start
       this.end = event.end
       this.$parent.$parent.size = size

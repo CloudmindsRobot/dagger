@@ -142,7 +142,7 @@ func LokiList(c *gin.Context) {
 			chartResult["yAxis-data"].(map[string][]string)[fmt.Sprintf("%d", index)] = vsInterval
 		}
 	} else {
-		size := 20
+		size := 10
 		splitDateTimeArray, step := utils.SplitDateTime(start, end, size)
 		chartResult["xAxis-data"] = splitDateTimeArray
 		chartResult["yAxis-data"] = utils.InitSplitDateTime(size)
